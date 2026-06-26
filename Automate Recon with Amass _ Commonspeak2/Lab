@@ -1,0 +1,781 @@
+Automate Recon with Amass + Commonspeak2
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure Amass for automated subdomain enumeration and asset discovery
+Utilize Commonspeak2 wordlists for comprehensive cloud asset enumeration
+Create Python scripts to automate reconnaissance workflows
+Process and visualize reconnaissance results effectively
+Understand the importance of automated reconnaissance in cloud security assessments
+Apply reconnaissance techniques relevant to the Al Razzaq Certified Cloud Adversary Simulation Expert (CCASE) certification
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of Linux command line operations
+Fundamental knowledge of DNS and subdomain concepts
+Basic Python programming skills
+Understanding of cloud infrastructure concepts (AWS, Azure, GCP)
+Familiarity with cybersecurity reconnaissance principles
+Note: Al Nafi provides ready-to-use Linux-based cloud machines. Simply click Start Lab to begin - no need to build your own virtual machine.
+
+Lab Environment Setup
+This lab runs entirely on a single Linux machine provided by Al Nafi. All tools, scripts, and verification steps will be performed on this machine without requiring additional systems or remote hosts.
+
+Task 1: Install and Configure Amass for Asset Discovery
+Subtask 1.1: Install Amass
+First, we need to install Amass, a powerful open-source tool for network mapping and asset discovery.
+
+# Update the system package list
+sudo apt update
+
+# Install required dependencies
+sudo apt install -y wget curl git build-essential
+
+# Download the latest Amass release
+wget https://github.com/OWASP/Amass/releases/download/v3.23.3/amass_linux_amd64.zip
+
+# Extract the downloaded file
+unzip amass_linux_amd64.zip
+
+# Move Amass to system PATH
+sudo mv amass_linux_amd64/amass /usr/local/bin/
+
+# Verify installation
+amass version
+Subtask 1.2: Configure Amass Data Sources
+Create a configuration file to enhance Amass capabilities with various data sources:
+
+# Create Amass configuration directory
+mkdir -p ~/.config/amass
+
+# Create configuration file
+cat > ~/.config/amass/config.ini << 'EOF'
+[data_sources]
+minimum_ttl = 1440
+
+[data_sources.AlienVault]
+[data_sources.Ask]
+[data_sources.Baidu]
+[data_sources.Bing]
+[data_sources.CertSpotter]
+[data_sources.CIRCL]
+[data_sources.CommonCrawl]
+[data_sources.Crtsh]
+[data_sources.DNSdb]
+[data_sources.DNSDumpster]
+[data_sources.DNSrepo]
+[data_sources.Dogpile]
+[data_sources.Exalead]
+[data_sources.FindSubDomains]
+[data_sources.Google]
+[data_sources.HackerTarget]
+[data_sources.IPv4Info]
+[data_sources.Netcraft]
+[data_sources.PassiveTotal]
+[data_sources.Riddler]
+[data_sources.SecurityTrails]
+[data_sources.Shodan]
+[data_sources.ThreatCrowd]
+[data_sources.VirusTotal]
+[data_sources.Yahoo]
+[data_sources.Yandex]
+EOF
+Subtask 1.3: Basic Amass Reconnaissance
+Perform initial reconnaissance on a target domain:
+
+# Create a working directory for this lab
+mkdir ~/recon_lab
+cd ~/recon_lab
+
+# Run basic subdomain enumeration (using example.com as safe target)
+amass enum -d example.com -o amass_basic_results.txt
+
+# View the results
+cat amass_basic_results.txt
+Subtask 1.4: Advanced Amass Reconnaissance
+Run more comprehensive reconnaissance with additional options:
+
+# Run comprehensive enumeration with brute force
+amass enum -d example.com -brute -w /usr/share/wordlists/amass/subdomains-top1mil-5000.txt -o amass_comprehensive.txt
+
+# Run passive enumeration only (no active scanning)
+amass enum -passive -d example.com -o amass_passive.txt
+
+# Generate visualization data
+amass viz -d3 -d example.com
+Task 2: Implement Commonspeak2 for Cloud Asset Enumeration
+Subtask 2.1: Install and Setup Commonspeak2
+Download and configure Commonspeak2 wordlists for cloud-specific enumeration:
+
+# Clone Commonspeak2 repository
+git clone https://github.com/assetnote/commonspeak2-wordlists.git
+cd commonspeak2-wordlists
+
+# List available wordlists
+ls -la
+
+# Return to working directory
+cd ~/recon_lab
+Subtask 2.2: Create Cloud-Specific Enumeration Script
+Create a Python script to automate cloud asset discovery using Commonspeak2 wordlists:
+
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+import os
+import time
+from concurrent.futures import ThreadPoolExecutor
+import requests
+from urllib.parse import urlparse
+
+def create_cloud_enum_script():
+    script_content = '''#!/usr/bin/env python3
+
+import subprocess
+import sys
+import os
+import time
+import requests
+from concurrent.futures import ThreadPoolExecutor
+import threading
+
+class CloudAssetEnumerator:
+    def __init__(self, target_domain):
+        self.target_domain = target_domain
+        self.results = []
+        self.lock = threading.Lock()
+        
+    def check_subdomain(self, subdomain):
+        """Check if a subdomain exists and is accessible"""
+        full_domain = f"{subdomain}.{self.target_domain}"
+        try:
+            # Try HTTP first
+            response = requests.get(f"http://{full_domain}", timeout=5, allow_redirects=True)
+            if response.status_code == 200:
+                with self.lock:
+                    self.results.append(f"{full_domain} - HTTP - {response.status_code}")
+                    print(f"[+] Found: {full_domain} (HTTP)")
+                return True
+        except:
+            pass
+            
+        try:
+            # Try HTTPS
+            response = requests.get(f"https://{full_domain}", timeout=5, allow_redirects=True, verify=False)
+            if response.status_code == 200:
+                with self.lock:
+                    self.results.append(f"{full_domain} - HTTPS - {response.status_code}")
+                    print(f"[+] Found: {full_domain} (HTTPS)")
+                return True
+        except:
+            pass
+            
+        return False
+    
+    def enumerate_with_wordlist(self, wordlist_path, max_workers=10):
+        """Enumerate subdomains using a wordlist"""
+        if not os.path.exists(wordlist_path):
+            print(f"[-] Wordlist not found: {wordlist_path}")
+            return
+            
+        print(f"[*] Starting enumeration with {wordlist_path}")
+        
+        with open(wordlist_path, 'r') as f:
+            subdomains = [line.strip() for line in f if line.strip()]
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(self.check_subdomain, subdomains[:100])  # Limit to first 100 for demo
+    
+    def save_results(self, output_file):
+        """Save results to file"""
+        with open(output_file, 'w') as f:
+            for result in self.results:
+                f.write(result + '\\n')
+        print(f"[*] Results saved to {output_file}")
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python3 cloud_enum.py <target_domain>")
+        sys.exit(1)
+    
+    target_domain = sys.argv[1]
+    enumerator = CloudAssetEnumerator(target_domain)
+    
+    # Common cloud service subdomains
+    cloud_subdomains = [
+        "api", "app", "admin", "dev", "test", "staging", "prod", "www",
+        "mail", "ftp", "blog", "shop", "store", "portal", "dashboard",
+        "cdn", "static", "assets", "media", "images", "files", "docs",
+        "support", "help", "status", "monitor", "health", "metrics"
+    ]
+    
+    print(f"[*] Starting cloud asset enumeration for {target_domain}")
+    
+    # Check common cloud subdomains
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(enumerator.check_subdomain, cloud_subdomains)
+    
+    # Save results
+    enumerator.save_results(f"cloud_assets_{target_domain}.txt")
+    
+    print(f"[*] Enumeration complete. Found {len(enumerator.results)} assets.")
+
+if __name__ == "__main__":
+    main()
+'''
+    
+    with open('cloud_enum.py', 'w') as f:
+        f.write(script_content)
+    
+    os.chmod('cloud_enum.py', 0o755)
+    print("[*] Cloud enumeration script created successfully")
+
+# Create the script
+create_cloud_enum_script()
+Save this as create_cloud_script.py and run it:
+
+# Create the cloud enumeration script
+python3 create_cloud_script.py
+
+# Verify the script was created
+ls -la cloud_enum.py
+Subtask 2.3: Run Cloud Asset Enumeration
+Execute the cloud asset enumeration script:
+
+# Install required Python packages
+pip3 install requests
+
+# Run cloud enumeration on example domain
+python3 cloud_enum.py example.com
+
+# View results
+cat cloud_assets_example.com.txt
+Task 3: Automate Results Processing and Visualization
+Subtask 3.1: Create Results Processing Script
+Create a comprehensive Python script to process and analyze reconnaissance results:
+
+#!/usr/bin/env python3
+
+import json
+import csv
+import os
+import re
+from collections import Counter
+import matplotlib.pyplot as plt
+import pandas as pd
+
+def create_results_processor():
+    script_content = '''#!/usr/bin/env python3
+
+import json
+import csv
+import os
+import re
+from collections import Counter, defaultdict
+import sys
+
+class ReconResultsProcessor:
+    def __init__(self):
+        self.amass_results = []
+        self.cloud_results = []
+        self.combined_results = []
+        
+    def load_amass_results(self, filename):
+        """Load Amass enumeration results"""
+        if not os.path.exists(filename):
+            print(f"[-] Amass results file not found: {filename}")
+            return
+            
+        with open(filename, 'r') as f:
+            self.amass_results = [line.strip() for line in f if line.strip()]
+        
+        print(f"[+] Loaded {len(self.amass_results)} Amass results")
+    
+    def load_cloud_results(self, filename):
+        """Load cloud enumeration results"""
+        if not os.path.exists(filename):
+            print(f"[-] Cloud results file not found: {filename}")
+            return
+            
+        with open(filename, 'r') as f:
+            self.cloud_results = [line.strip() for line in f if line.strip()]
+        
+        print(f"[+] Loaded {len(self.cloud_results)} cloud enumeration results")
+    
+    def analyze_subdomains(self):
+        """Analyze subdomain patterns"""
+        all_domains = self.amass_results + [result.split(' - ')[0] for result in self.cloud_results]
+        
+        # Extract subdomain patterns
+        patterns = defaultdict(int)
+        tlds = defaultdict(int)
+        
+        for domain in all_domains:
+            if '.' in domain:
+                parts = domain.split('.')
+                if len(parts) >= 2:
+                    subdomain = parts[0]
+                    tld = '.'.join(parts[-2:])
+                    patterns[subdomain] += 1
+                    tlds[tld] += 1
+        
+        return patterns, tlds
+    
+    def generate_statistics(self):
+        """Generate comprehensive statistics"""
+        patterns, tlds = self.analyze_subdomains()
+        
+        stats = {
+            'total_amass_results': len(self.amass_results),
+            'total_cloud_results': len(self.cloud_results),
+            'unique_domains': len(set(self.amass_results + [r.split(' - ')[0] for r in self.cloud_results])),
+            'top_subdomains': dict(Counter(patterns).most_common(10)),
+            'top_tlds': dict(Counter(tlds).most_common(5))
+        }
+        
+        return stats
+    
+    def export_to_csv(self, output_file):
+        """Export results to CSV format"""
+        with open(output_file, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Domain', 'Source', 'Status', 'Protocol'])
+            
+            # Add Amass results
+            for domain in self.amass_results:
+                writer.writerow([domain, 'Amass', 'Discovered', 'DNS'])
+            
+            # Add cloud results
+            for result in self.cloud_results:
+                parts = result.split(' - ')
+                if len(parts) >= 3:
+                    domain, protocol, status = parts[0], parts[1], parts[2]
+                    writer.writerow([domain, 'Cloud_Enum', status, protocol])
+        
+        print(f"[+] Results exported to {output_file}")
+    
+    def export_to_json(self, output_file):
+        """Export results to JSON format"""
+        data = {
+            'amass_results': self.amass_results,
+            'cloud_results': self.cloud_results,
+            'statistics': self.generate_statistics(),
+            'timestamp': str(pd.Timestamp.now()) if 'pd' in globals() else 'N/A'
+        }
+        
+        with open(output_file, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        print(f"[+] Results exported to {output_file}")
+    
+    def create_summary_report(self, output_file):
+        """Create a comprehensive summary report"""
+        stats = self.generate_statistics()
+        
+        report = f"""
+# Reconnaissance Results Summary Report
+
+## Overview
+- Total Amass Results: {stats['total_amass_results']}
+- Total Cloud Enumeration Results: {stats['total_cloud_results']}
+- Unique Domains Found: {stats['unique_domains']}
+
+## Top Subdomain Patterns
+"""
+        
+        for subdomain, count in stats['top_subdomains'].items():
+            report += f"- {subdomain}: {count} occurrences\\n"
+        
+        report += "\\n## Top Level Domains\\n"
+        for tld, count in stats['top_tlds'].items():
+            report += f"- {tld}: {count} occurrences\\n"
+        
+        report += f"""
+## Detailed Results
+
+### Amass Discoveries
+"""
+        for domain in self.amass_results[:20]:  # Show first 20
+            report += f"- {domain}\\n"
+        
+        if len(self.amass_results) > 20:
+            report += f"... and {len(self.amass_results) - 20} more\\n"
+        
+        report += "\\n### Cloud Asset Discoveries\\n"
+        for result in self.cloud_results[:20]:  # Show first 20
+            report += f"- {result}\\n"
+        
+        if len(self.cloud_results) > 20:
+            report += f"... and {len(self.cloud_results) - 20} more\\n"
+        
+        with open(output_file, 'w') as f:
+            f.write(report)
+        
+        print(f"[+] Summary report created: {output_file}")
+
+def main():
+    processor = ReconResultsProcessor()
+    
+    # Load results
+    processor.load_amass_results('amass_comprehensive.txt')
+    processor.load_cloud_results('cloud_assets_example.com.txt')
+    
+    # Generate outputs
+    processor.export_to_csv('recon_results.csv')
+    processor.export_to_json('recon_results.json')
+    processor.create_summary_report('recon_summary.md')
+    
+    # Display statistics
+    stats = processor.generate_statistics()
+    print("\\n[*] Reconnaissance Statistics:")
+    print(f"    Total unique domains: {stats['unique_domains']}")
+    print(f"    Amass results: {stats['total_amass_results']}")
+    print(f"    Cloud enumeration results: {stats['total_cloud_results']}")
+    
+    print("\\n[*] Processing complete!")
+
+if __name__ == "__main__":
+    main()
+'''
+    
+    with open('process_results.py', 'w') as f:
+        f.write(script_content)
+    
+    os.chmod('process_results.py', 0o755)
+    print("[*] Results processing script created successfully")
+
+# Create the processing script
+create_results_processor()
+Save this as create_processor.py and run it:
+
+# Create the results processing script
+python3 create_processor.py
+
+# Install required packages for data processing
+pip3 install pandas matplotlib
+
+# Run the results processor
+python3 process_results.py
+Subtask 3.2: Create Automated Reconnaissance Workflow
+Create a master script that automates the entire reconnaissance workflow:
+
+#!/bin/bash
+
+# Create the master automation script
+cat > automated_recon.sh << 'EOF'
+#!/bin/bash
+
+# Automated Reconnaissance Workflow Script
+# Lab 1: Automate Recon with Amass + Commonspeak2
+
+echo "[*] Starting Automated Reconnaissance Workflow"
+echo "================================================"
+
+# Check if target domain is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <target_domain>"
+    echo "Example: $0 example.com"
+    exit 1
+fi
+
+TARGET_DOMAIN=$1
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+RESULTS_DIR="recon_${TARGET_DOMAIN}_${TIMESTAMP}"
+
+# Create results directory
+mkdir -p "$RESULTS_DIR"
+cd "$RESULTS_DIR"
+
+echo "[*] Target Domain: $TARGET_DOMAIN"
+echo "[*] Results Directory: $RESULTS_DIR"
+echo "[*] Timestamp: $TIMESTAMP"
+
+# Step 1: Run Amass enumeration
+echo ""
+echo "[*] Step 1: Running Amass enumeration..."
+echo "----------------------------------------"
+
+# Passive enumeration
+echo "[*] Running passive enumeration..."
+amass enum -passive -d "$TARGET_DOMAIN" -o "amass_passive_${TARGET_DOMAIN}.txt"
+
+# Active enumeration with brute force (limited for demo)
+echo "[*] Running active enumeration..."
+timeout 300 amass enum -d "$TARGET_DOMAIN" -brute -w /usr/share/wordlists/dirb/common.txt -o "amass_active_${TARGET_DOMAIN}.txt" 2>/dev/null || echo "[*] Amass active scan completed (timeout reached)"
+
+# Combine results
+cat "amass_passive_${TARGET_DOMAIN}.txt" "amass_active_${TARGET_DOMAIN}.txt" 2>/dev/null | sort -u > "amass_combined_${TARGET_DOMAIN}.txt"
+
+echo "[+] Amass enumeration completed"
+echo "    Passive results: $(wc -l < amass_passive_${TARGET_DOMAIN}.txt 2>/dev/null || echo 0)"
+echo "    Active results: $(wc -l < amass_active_${TARGET_DOMAIN}.txt 2>/dev/null || echo 0)"
+echo "    Combined unique results: $(wc -l < amass_combined_${TARGET_DOMAIN}.txt)"
+
+# Step 2: Run cloud asset enumeration
+echo ""
+echo "[*] Step 2: Running cloud asset enumeration..."
+echo "----------------------------------------------"
+
+# Copy the cloud enumeration script to current directory
+cp ../cloud_enum.py .
+
+# Run cloud enumeration
+python3 cloud_enum.py "$TARGET_DOMAIN"
+
+echo "[+] Cloud asset enumeration completed"
+
+# Step 3: Process and analyze results
+echo ""
+echo "[*] Step 3: Processing and analyzing results..."
+echo "-----------------------------------------------"
+
+# Copy the results processing script
+cp ../process_results.py .
+
+# Modify the processor to use our specific files
+sed -i "s/amass_comprehensive.txt/amass_combined_${TARGET_DOMAIN}.txt/g" process_results.py
+sed -i "s/cloud_assets_example.com.txt/cloud_assets_${TARGET_DOMAIN}.txt/g" process_results.py
+
+# Run results processing
+python3 process_results.py
+
+echo "[+] Results processing completed"
+
+# Step 4: Generate final summary
+echo ""
+echo "[*] Step 4: Generating final summary..."
+echo "---------------------------------------"
+
+TOTAL_AMASS=$(wc -l < "amass_combined_${TARGET_DOMAIN}.txt" 2>/dev/null || echo 0)
+TOTAL_CLOUD=$(wc -l < "cloud_assets_${TARGET_DOMAIN}.txt" 2>/dev/null || echo 0)
+
+cat > "final_summary_${TARGET_DOMAIN}.txt" << EOL
+Automated Reconnaissance Summary for ${TARGET_DOMAIN}
+Generated on: $(date)
+
+RESULTS OVERVIEW:
+================
+- Amass Discoveries: ${TOTAL_AMASS}
+- Cloud Asset Discoveries: ${TOTAL_CLOUD}
+- Total Unique Assets: $((TOTAL_AMASS + TOTAL_CLOUD))
+
+FILES GENERATED:
+===============
+- amass_passive_${TARGET_DOMAIN}.txt
+- amass_active_${TARGET_DOMAIN}.txt
+- amass_combined_${TARGET_DOMAIN}.txt
+- cloud_assets_${TARGET_DOMAIN}.txt
+- recon_results.csv
+- recon_results.json
+- recon_summary.md
+
+NEXT STEPS:
+==========
+1. Review the generated CSV file for structured data analysis
+2. Examine the JSON file for programmatic processing
+3. Read the markdown summary for human-readable insights
+4. Validate discovered assets manually
+5. Proceed with further security assessment based on findings
+
+EOL
+
+echo "[+] Final summary generated: final_summary_${TARGET_DOMAIN}.txt"
+
+# Display final results
+echo ""
+echo "=========================================="
+echo "AUTOMATED RECONNAISSANCE COMPLETED"
+echo "=========================================="
+echo "Target Domain: $TARGET_DOMAIN"
+echo "Results Directory: $(pwd)"
+echo "Total Files Generated: $(ls -1 | wc -l)"
+echo ""
+echo "Key Results:"
+echo "- Amass Discoveries: $TOTAL_AMASS"
+echo "- Cloud Asset Discoveries: $TOTAL_CLOUD"
+echo ""
+echo "Review the files in this directory for detailed results."
+echo "=========================================="
+
+# Return to parent directory
+cd ..
+
+echo "[*] Workflow completed successfully!"
+EOF
+
+# Make the script executable
+chmod +x automated_recon.sh
+Subtask 3.3: Run Complete Automated Workflow
+Execute the complete automated reconnaissance workflow:
+
+# Run the automated reconnaissance workflow
+./automated_recon.sh example.com
+
+# List the generated results
+ls -la recon_example.com_*
+
+# Navigate to the results directory (replace with actual directory name)
+cd recon_example.com_*
+
+# View the final summary
+cat final_summary_example.com.txt
+
+# View the structured CSV results
+head -20 recon_results.csv
+
+# View the markdown summary
+cat recon_summary.md
+Verification and Testing
+Verify Tool Installation
+# Verify Amass installation
+amass version
+
+# Verify Python scripts are executable
+ls -la *.py
+
+# Test Python dependencies
+python3 -c "import requests, json, csv; print('All dependencies available')"
+Test Individual Components
+# Test Amass with a quick scan
+amass enum -passive -d google.com -timeout 30
+
+# Test cloud enumeration script
+echo "Testing cloud enumeration..."
+python3 cloud_enum.py google.com
+
+# Test results processing
+python3 process_results.py
+Troubleshooting Common Issues
+Issue 1: Amass Installation Problems
+# If Amass installation fails, try alternative method
+sudo snap install amass
+
+# Or compile from source
+git clone https://github.com/OWASP/Amass.git
+cd Amass
+make build
+sudo cp ./amass /usr/local/bin/
+Issue 2: Python Dependencies Missing
+# Install missing Python packages
+pip3 install --user requests pandas matplotlib
+
+# If pip3 is not available
+sudo apt install python3-pip
+Issue 3: Permission Denied Errors
+# Fix script permissions
+chmod +x *.sh *.py
+
+# Fix directory permissions
+chmod 755 ~/recon_lab
+Issue 4: Network Connectivity Issues
+# Test network connectivity
+ping -c 3 8.8.8.8
+
+# Test DNS resolution
+nslookup example.com
+
+# Check if tools can access external resources
+curl -I https://www.google.com
+Advanced Techniques and Tips
+Optimizing Amass Performance
+# Use configuration file for better results
+amass enum -config ~/.config/amass/config.ini -d target.com
+
+# Increase timeout for thorough scanning
+amass enum -timeout 30 -d target.com
+
+# Use multiple data sources
+amass enum -src -d target.com
+Enhancing Cloud Asset Discovery
+# Create custom wordlists for specific cloud providers
+cat > aws_subdomains.txt << 'EOF'
+s3
+ec2
+rds
+lambda
+api-gateway
+cloudfront
+elb
+ecs
+eks
+EOF
+
+# Use the custom wordlist in enumeration
+# (Modify cloud_enum.py to use custom wordlists)
+Automating Report Generation
+# Create automated reporting script
+cat > generate_report.sh << 'EOF'
+#!/bin/bash
+TARGET=$1
+DATE=$(date +"%Y-%m-%d")
+
+# Generate HTML report
+echo "<html><head><title>Recon Report for $TARGET</title></head><body>" > "report_${TARGET}_${DATE}.html"
+echo "<h1>Reconnaissance Report for $TARGET</h1>" >> "report_${TARGET}_${DATE}.html"
+echo "<h2>Generated on: $DATE</h2>" >> "report_${TARGET}_${DATE}.html"
+
+# Add CSV data as HTML table
+echo "<h3>Discovered Assets</h3>" >> "report_${TARGET}_${DATE}.html"
+echo "<table border='1'>" >> "report_${TARGET}_${DATE}.html"
+head -1 recon_results.csv | sed 's/,/<\/th><th>/g' | sed 's/^/<tr><th>/' | sed 's/$/<\/th><\/tr>/' >> "report_${TARGET}_${DATE}.html"
+tail -n +2 recon_results.csv | sed 's/,/<\/td><td>/g' | sed 's/^/<tr><td>/' | sed 's/$/<\/td><\/tr>/' >> "report_${TARGET}_${DATE}.html"
+echo "</table>" >> "report_${TARGET}_${DATE}.html"
+echo "</body></html>" >> "report_${TARGET}_${DATE}.html"
+
+echo "HTML report generated: report_${TARGET}_${DATE}.html"
+EOF
+
+chmod +x generate_report.sh
+Security Considerations and Best Practices
+Ethical Reconnaissance Guidelines
+Always obtain proper authorization before conducting reconnaissance on any target
+Use only publicly available information and passive techniques when possible
+Respect rate limits and avoid overwhelming target systems
+Document all activities for compliance and audit purposes
+Follow responsible disclosure practices for any vulnerabilities discovered
+Data Protection
+# Encrypt sensitive reconnaissance data
+gpg --symmetric --cipher-algo AES256 recon_results.json
+
+# Secure file permissions
+chmod 600 *.txt *.csv *.json
+
+# Clean up temporary files
+find . -name "*.tmp" -delete
+Legal and Compliance Notes
+Ensure reconnaissance activities comply with local laws and regulations
+Obtain written permission before testing third-party systems
+Follow organizational policies and procedures
+Consider using dedicated testing environments when possible
+Conclusion
+In this lab, you have successfully:
+
+Installed and configured Amass for comprehensive subdomain enumeration and asset discovery
+Implemented Commonspeak2 wordlists for targeted cloud asset enumeration
+Created Python automation scripts to streamline reconnaissance workflows
+Developed results processing capabilities for data analysis and visualization
+Built a complete automated reconnaissance pipeline that can be reused for future assessments
+Key Takeaways
+Automation is essential for efficient reconnaissance in cloud environments
+Multiple data sources provide more comprehensive results than single tools
+Proper data processing transforms raw reconnaissance data into actionable intelligence
+Documentation and reporting are crucial for professional security assessments
+Ethical considerations must always guide reconnaissance activities
+Skills Developed
+This lab has prepared you for the Al Razzaq Certified Cloud Adversary Simulation Expert (CCASE) certification by providing hands-on experience with:
+
+Automated asset discovery techniques
+Cloud-specific reconnaissance methodologies
+Python scripting for security automation
+Results analysis and reporting
+Professional reconnaissance workflows
+Next Steps
+To further develop your reconnaissance skills:
+
+Experiment with different target domains (with proper authorization)
+Customize the scripts for specific cloud providers or environments
+Integrate additional tools like Subfinder, Assetfinder, or Nuclei
+Develop advanced visualization techniques using tools like D3.js or Plotly
+Practice on dedicated platforms like HackTheBox, TryHackMe, or VulnHub
+The automated reconnaissance capabilities you have built in this lab form a solid foundation for advanced cloud security assessments and adversary simulation exercises. Remember to always conduct reconnaissance activities ethically and within legal boundaries.
