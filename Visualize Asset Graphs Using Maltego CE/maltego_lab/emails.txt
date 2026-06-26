@@ -1,0 +1,5 @@
+admin@example-corp.com
+support@example-corp.com
+security@example-corp.com
+dev@example-corp.com
+info@example-corp.com
