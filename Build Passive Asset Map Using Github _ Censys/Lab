@@ -1,0 +1,471 @@
+Build Passive Asset Map Using GitHub & Censys
+Objectives
+By the end of this lab, students will be able to:
+
+Perform passive reconnaissance using GitHub search techniques
+Utilize Censys API to discover public cloud infrastructure
+Automate asset discovery using Python scripts
+Aggregate and analyze reconnaissance data from multiple sources
+Generate comprehensive security assessment reports
+Prerequisites
+Basic understanding of cloud computing (AWS, Azure, GCP)
+Familiarity with Linux command line
+Basic Python programming knowledge
+Understanding of network protocols and cybersecurity principles
+GitHub account (free tier)
+Censys account with API credentials (free tier available at https://censys.io)
+Lab Environment
+Al Nafi provides pre-configured Linux cloud machines. Click Start Lab to access your environment with:
+
+Python 3.x with pip
+Git client
+Text editors (nano, vim)
+Network utilities
+Web browser for API access
+Task 1: GitHub Reconnaissance for Exposed Assets
+Step 1: Setup Working Environment
+Create directory structure and install dependencies:
+
+mkdir -p ~/passive-recon-lab/{github-recon,censys-recon,reports}
+cd ~/passive-recon-lab/github-recon
+pip3 install requests
+Step 2: Manual GitHub Search Techniques
+Open a web browser and navigate to https://github.com. Use these search operators:
+
+AWS Credentials:
+
+"aws_access_key_id" OR "aws_secret_access_key"
+Database Strings:
+
+"mongodb://" OR "mysql://" password
+API Keys:
+
+"api_key" OR "apikey" filename:config
+Cloud Configs:
+
+filename:.env OR filename:terraform.tfvars
+Document findings in a text file with repository name, file path, exposure type, and risk level.
+
+Step 3: Create GitHub Scanner Script
+Create github_scanner.py:
+
+#!/usr/bin/env python3
+
+import requests
+import json
+import time
+from datetime import datetime
+
+class GitHubScanner:
+    def __init__(self):
+        self.base_url = "https://api.github.com/search/code"
+        self.headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'PassiveRecon-Lab'
+        }
+        self.results = []
+    
+    def search_github(self, query, max_results=10):
+        """
+        Search GitHub for specific patterns using the Code Search API.
+        
+        Args:
+            query: GitHub search query string
+            max_results: Maximum number of results to return
+            
+        Returns:
+            List of search result items
+        """
+        # TODO: Implement API request with proper parameters
+        # TODO: Handle rate limiting (403 status code)
+        # TODO: Parse and return results
+        # TODO: Implement error handling
+        pass
+    
+    def analyze_results(self, items, search_type):
+        """
+        Analyze and categorize search results.
+        
+        Args:
+            items: List of search result items
+            search_type: Category of search performed
+            
+        Returns:
+            List of analyzed findings with metadata
+        """
+        # TODO: Extract repository name, file path, and URL
+        # TODO: Add timestamp and search type
+        # TODO: Calculate risk score based on content
+        # TODO: Return structured findings list
+        pass
+    
+    def run_comprehensive_scan(self):
+        """
+        Execute multiple searches for different asset types.
+        
+        Returns:
+            List of all findings from various search queries
+        """
+        search_queries = {
+            'aws_credentials': 'aws_access_key_id OR aws_secret_access_key',
+            'database_urls': 'mongodb:// OR mysql:// OR postgres://',
+            'api_keys': 'api_key OR apikey filename:config',
+            'cloud_configs': 'filename:.env OR filename:terraform.tfvars'
+        }
+        
+        # TODO: Iterate through search queries
+        # TODO: Call search_github for each query
+        # TODO: Analyze results for each search type
+        # TODO: Implement rate limiting delays
+        # TODO: Return aggregated findings
+        pass
+    
+    def save_results(self, findings, filename='github_scan_results.json'):
+        """Save scan results to JSON file."""
+        # TODO: Write findings to JSON file with proper formatting
+        # TODO: Print summary statistics
+        pass
+
+def main():
+    # TODO: Initialize scanner
+    # TODO: Run comprehensive scan
+    # TODO: Save results
+    # TODO: Generate summary report
+    pass
+
+if __name__ == "__main__":
+    main()
+Make executable and run:
+
+chmod +x github_scanner.py
+python3 github_scanner.py
+Task 2: Censys Cloud Asset Discovery
+Step 1: Configure Censys API
+Navigate to Censys directory and install library:
+
+cd ~/passive-recon-lab/censys-recon
+pip3 install censys
+Create credentials file:
+
+mkdir -p ~/.censys
+nano ~/.censys/credentials
+Add your API credentials:
+
+[DEFAULT]
+api_id = your-api-id-here
+api_secret = your-api-secret-here
+Step 2: Create Basic Censys Scanner
+Create censys_scanner.py:
+
+#!/usr/bin/env python3
+
+import json
+from censys.search import CensysHosts
+import time
+
+class CensysScanner:
+    def __init__(self):
+        """Initialize Censys API client."""
+        # TODO: Initialize CensysHosts object
+        # TODO: Implement error handling for credentials
+        pass
+    
+    def search_cloud_assets(self, query, max_results=50):
+        """
+        Search for cloud assets using Censys query language.
+        
+        Args:
+            query: Censys search query
+            max_results: Maximum results to retrieve
+            
+        Returns:
+            List of discovered assets with metadata
+        """
+        # TODO: Execute search query
+        # TODO: Extract IP, services, location, ASN
+        # TODO: Handle pagination if needed
+        # TODO: Return structured results
+        pass
+    
+    def search_aws_assets(self):
+        """
+        Search for AWS cloud infrastructure.
+        
+        Returns:
+            List of AWS assets found
+        """
+        queries = [
+            'services.service_name: "HTTP" and autonomous_system.name: "AMAZON"',
+            'services.port: 443 and autonomous_system.name: "AMAZON-02"'
+        ]
+        
+        # TODO: Execute each query
+        # TODO: Aggregate results
+        # TODO: Implement rate limiting
+        # TODO: Return combined results
+        pass
+    
+    def search_azure_assets(self):
+        """Search for Azure cloud infrastructure."""
+        # TODO: Define Azure-specific queries
+        # TODO: Execute searches
+        # TODO: Return results
+        pass
+    
+    def search_gcp_assets(self):
+        """Search for Google Cloud Platform infrastructure."""
+        # TODO: Define GCP-specific queries
+        # TODO: Execute searches
+        # TODO: Return results
+        pass
+    
+    def search_exposed_services(self):
+        """
+        Search for commonly exposed and vulnerable services.
+        
+        Returns:
+            Dictionary categorizing exposed services
+        """
+        service_queries = {
+            'databases': ['services.port: 27017', 'services.port: 3306'],
+            'remote_access': ['services.port: 22', 'services.port: 3389'],
+            'web_services': ['services.port: 80', 'services.port: 443']
+        }
+        
+        # TODO: Iterate through service categories
+        # TODO: Execute queries for each service type
+        # TODO: Categorize and structure results
+        # TODO: Return organized findings
+        pass
+
+def main():
+    # TODO: Initialize scanner
+    # TODO: Search different cloud providers
+    # TODO: Search for exposed services
+    # TODO: Save results to JSON
+    # TODO: Print summary statistics
+    pass
+
+if __name__ == "__main__":
+    main()
+Run the scanner:
+
+python3 censys_scanner.py
+Task 3: Data Aggregation and Reporting
+Step 1: Create Asset Aggregator
+Navigate to main directory and create asset_aggregator.py:
+
+#!/usr/bin/env python3
+
+import json
+import os
+import csv
+from datetime import datetime
+from collections import defaultdict, Counter
+
+class AssetAggregator:
+    def __init__(self):
+        self.github_data = []
+        self.censys_data = {}
+        self.aggregated_data = {}
+        
+    def load_github_data(self, filename='github-recon/github_scan_results.json'):
+        """
+        Load GitHub reconnaissance data from JSON file.
+        
+        Args:
+            filename: Path to GitHub results file
+        """
+        # TODO: Check if file exists
+        # TODO: Load and parse JSON data
+        # TODO: Store in self.github_data
+        # TODO: Handle errors gracefully
+        pass
+    
+    def load_censys_data(self, filename='censys-recon/censys_results.json'):
+        """Load Censys reconnaissance data."""
+        # TODO: Load Censys scan results
+        # TODO: Parse cloud provider data
+        # TODO: Store in self.censys_data
+        pass
+    
+    def analyze_github_exposures(self):
+        """
+        Analyze GitHub exposure patterns and risk levels.
+        
+        Returns:
+            Dictionary with exposure analysis
+        """
+        # TODO: Count exposure types
+        # TODO: Identify unique repositories
+        # TODO: Calculate risk scores
+        # TODO: Return analysis summary
+        pass
+    
+    def analyze_cloud_distribution(self):
+        """
+        Analyze distribution across cloud providers.
+        
+        Returns:
+            Dictionary with provider distribution
+        """
+        # TODO: Count assets per cloud provider
+        # TODO: Calculate percentages
+        # TODO: Identify most exposed provider
+        pass
+    
+    def analyze_service_exposure(self):
+        """
+        Analyze exposed services and their risk levels.
+        
+        Returns:
+            Dictionary categorizing service exposures
+        """
+        # TODO: Categorize services by type
+        # TODO: Count exposures per category
+        # TODO: Identify high-risk services
+        # TODO: Return structured analysis
+        pass
+    
+    def perform_risk_assessment(self):
+        """
+        Perform comprehensive risk assessment.
+        
+        Returns:
+            List of risk factors with severity levels
+        """
+        # TODO: Analyze GitHub exposures for risks
+        # TODO: Evaluate Censys findings for vulnerabilities
+        # TODO: Assign risk levels (HIGH, MEDIUM, LOW)
+        # TODO: Generate risk factor list
+        pass
+    
+    def generate_csv_reports(self):
+        """Generate CSV reports for findings and risks."""
+        # TODO: Create GitHub findings CSV
+        # TODO: Create Censys assets CSV
+        # TODO: Create risk assessment CSV
+        # TODO: Save all reports
+        pass
+    
+    def generate_summary_report(self):
+        """
+        Generate human-readable summary report.
+        
+        Returns:
+            Formatted string with complete summary
+        """
+        # TODO: Create report header with timestamp
+        # TODO: Add GitHub analysis section
+        # TODO: Add Censys analysis section
+        # TODO: Add risk assessment section
+        # TODO: Add recommendations
+        # TODO: Return formatted report
+        pass
+
+def main():
+    # TODO: Initialize aggregator
+    # TODO: Load data from both sources
+    # TODO: Perform analysis and correlation
+    # TODO: Generate all reports
+    # TODO: Display summary
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Create Complete Scan Automation
+Create run_complete_scan.sh:
+
+#!/bin/bash
+
+echo "=== PASSIVE ASSET RECONNAISSANCE - COMPLETE SCAN ==="
+echo "Starting comprehensive scan..."
+
+cd ~/passive-recon-lab
+
+# GitHub reconnaissance
+echo -e "\n[1/3] Running GitHub reconnaissance..."
+cd github-recon
+python3 github_scanner.py
+cd ..
+
+# Censys scanning
+echo -e "\n[2/3] Running Censys cloud asset discovery..."
+cd censys-recon
+python3 censys_scanner.py
+cd ..
+
+# Data aggregation
+echo -e "\n[3/3] Aggregating data and generating reports..."
+python3 asset_aggregator.py
+
+echo -e "\n=== SCAN COMPLETE ==="
+echo "Reports generated in ~/passive-recon-lab/reports/"
+ls -lh reports/
+Make executable and run:
+
+chmod +x run_complete_scan.sh
+./run_complete_scan.sh
+Step 3: Review Generated Reports
+Examine the output files:
+
+cd ~/passive-recon-lab/reports
+cat passive_recon_summary.txt
+head -20 github_findings.csv
+head -20 risk_assessment.csv
+Expected Outcomes
+Upon completion, students will have:
+
+GitHub reconnaissance data: JSON file with exposed credentials, API keys, and configuration files
+Censys asset inventory: Comprehensive list of cloud assets across AWS, Azure, and GCP
+Service exposure analysis: Categorized list of exposed databases, web services, and remote access points
+Risk assessment report: Prioritized list of security risks with severity levels
+CSV reports: Structured data for further analysis in spreadsheet applications
+Summary report: Executive-level overview of findings and recommendations
+Troubleshooting Tips
+GitHub API Rate Limiting:
+
+Unauthenticated requests limited to 10/minute
+Add delays between requests (2-3 seconds)
+Consider creating GitHub personal access token for higher limits
+Check rate limit status: curl https://api.github.com/rate_limit
+Censys API Errors:
+
+Verify credentials in ~/.censys/credentials
+Check API quota at https://censys.io/account
+Free tier limited to 250 queries/month
+Use specific queries to reduce API calls
+Missing Dependencies:
+
+pip3 install --upgrade requests censys
+Permission Errors:
+
+chmod +x *.py *.sh
+Empty Results:
+
+Verify internet connectivity
+Check API credentials are valid
+Ensure search queries are properly formatted
+Review API documentation for query syntax
+Conclusion
+This lab demonstrated passive reconnaissance techniques using GitHub and Censys for asset discovery. Students learned to:
+
+Search GitHub for exposed credentials and sensitive configurations
+Query Censys for public cloud infrastructure across major providers
+Automate reconnaissance workflows with Python
+Aggregate data from multiple sources for comprehensive analysis
+Generate actionable security reports with risk assessments
+Key Takeaways:
+
+Passive reconnaissance reveals significant security exposures without direct interaction
+Automated scanning improves efficiency and coverage
+Multiple data sources provide comprehensive asset visibility
+Proper documentation and reporting are essential for security assessments
+Next Steps:
+
+Implement continuous monitoring for new exposures
+Integrate findings into vulnerability management workflows
+Develop remediation procedures for identified risks
+Explore additional OSINT tools and techniques
+Practice responsible disclosure for discovered vulnerabilities
+Security Reminder: Always conduct reconnaissance activities ethically and legally. Only scan assets you own or have explicit permission to assess. Respect API terms of service and rate limits.
