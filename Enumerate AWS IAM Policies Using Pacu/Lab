@@ -1,0 +1,539 @@
+Enumerate AWS IAM Policies Using Pacu
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure the Pacu framework for AWS security testing
+Perform IAM policy enumeration using Pacu modules
+Identify privilege escalation paths and IAM misconfigurations
+Automate enumeration tasks using Python scripts
+Generate security assessment reports
+Prerequisites
+Basic understanding of AWS IAM (users, roles, policies)
+Familiarity with Linux command line
+Basic Python programming knowledge
+Understanding of JSON format
+AWS CLI basics
+Lab Environment
+Ready-to-Use Cloud Machines: Al Nafi provides pre-configured Linux machines for this lab. Click Start Lab to access your environment with:
+
+Ubuntu 20.04 LTS
+Python 3.8+
+Git and text editors
+All necessary dependencies pre-installed
+Task 1: Install and Configure Pacu Framework
+Step 1: Install Pacu
+# Update system and install dependencies
+sudo apt update && sudo apt install -y python3 python3-pip git
+
+# Clone Pacu repository
+cd /home/ubuntu
+git clone https://github.com/RhinoSecurityLabs/pacu.git
+cd pacu
+
+# Install requirements
+pip3 install -r requirements.txt
+Step 2: Initialize Pacu Session
+# Start Pacu
+python3 pacu.py
+
+# Create new session when prompted
+# Session name: iam-enum-lab
+Step 3: Configure Test Credentials
+# Create AWS credentials directory
+mkdir -p ~/.aws
+
+# Create test credentials file
+cat > ~/.aws/credentials << 'EOF'
+[default]
+aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+region = us-east-1
+EOF
+Note: These are example credentials for learning purposes only.
+
+Task 2: Perform IAM Enumeration with Pacu
+Step 1: Import Credentials and Verify
+# In Pacu session
+import_keys --profile default
+
+# Verify loaded credentials
+whoami
+Step 2: Enumerate IAM Resources
+# List available IAM modules
+list iam
+
+# Enumerate users, roles, policies, and groups
+run iam__enum_users_roles_policies_groups
+
+# View collected data
+data IAM
+Step 3: Analyze Policies and Permissions
+# Enumerate detailed permissions
+run iam__enum_permissions
+
+# Check attached policies
+run iam__enum_attached_policies
+
+# Scan for privilege escalation paths
+run iam__privesc_scan
+
+# Review findings
+data IAM --users
+data IAM --roles
+data IAM --policies
+Task 3: Identify Security Misconfigurations
+Step 1: Create Policy Analysis Script
+Create /home/ubuntu/analyze_policies.py:
+
+#!/usr/bin/env python3
+
+import json
+import sqlite3
+from datetime import datetime
+
+class IAMPolicyAnalyzer:
+    def __init__(self, db_path):
+        self.db_path = db_path
+        self.dangerous_actions = [
+            'iam:CreateRole',
+            'iam:AttachRolePolicy',
+            'iam:PutRolePolicy',
+            'sts:AssumeRole',
+            'iam:*',
+            '*'
+        ]
+    
+    def connect_db(self):
+        """
+        Connect to Pacu SQLite database.
+        
+        Returns:
+            sqlite3.Connection object or None
+        """
+        # TODO: Implement database connection with error handling
+        pass
+    
+    def analyze_policies(self):
+        """
+        Analyze IAM policies from database.
+        
+        Queries the database for users, roles, and policies.
+        Prints summary of findings.
+        """
+        # TODO: Connect to database
+        # TODO: Query aws_users table
+        # TODO: Query aws_roles table
+        # TODO: Query aws_policies table
+        # TODO: Print analysis results
+        pass
+    
+    def check_dangerous_permissions(self, policy_document):
+        """
+        Check policy document for dangerous permissions.
+        
+        Args:
+            policy_document: JSON policy document
+        
+        Returns:
+            List of dangerous permissions found
+        """
+        # TODO: Parse policy document
+        # TODO: Check for dangerous actions
+        # TODO: Check for wildcard resources
+        # TODO: Return list of findings
+        pass
+    
+    def generate_report(self, output_file):
+        """
+        Generate comprehensive analysis report.
+        
+        Args:
+            output_file: Path to save report
+        """
+        # TODO: Collect all findings
+        # TODO: Format report with sections
+        # TODO: Write to output file
+        pass
+
+if __name__ == "__main__":
+    db_path = "/home/ubuntu/pacu/pacu.db"
+    analyzer = IAMPolicyAnalyzer(db_path)
+    
+    # TODO: Call analysis methods
+    # TODO: Generate report
+Step 2: Create Policy Review Checklist
+Create /home/ubuntu/policy_review.py:
+
+#!/usr/bin/env python3
+
+import json
+
+class PolicyReviewer:
+    def __init__(self):
+        self.findings = []
+    
+    def check_wildcard_permissions(self, policy_doc):
+        """
+        Check for wildcard (*) in actions and resources.
+        
+        Args:
+            policy_doc: Policy document (dict or JSON string)
+        
+        Returns:
+            List of wildcard findings
+        """
+        # TODO: Parse policy document if string
+        # TODO: Iterate through statements
+        # TODO: Check for wildcard in Action field
+        # TODO: Check for wildcard in Resource field
+        # TODO: Return findings list
+        pass
+    
+    def check_privilege_escalation(self, policy_doc):
+        """
+        Identify privilege escalation opportunities.
+        
+        Args:
+            policy_doc: Policy document to analyze
+        
+        Returns:
+            List of escalation vectors found
+        """
+        escalation_actions = [
+            'iam:CreateRole',
+            'iam:AttachRolePolicy',
+            'iam:PutRolePolicy',
+            'iam:CreateUser',
+            'iam:AttachUserPolicy',
+            'iam:AddUserToGroup',
+            'sts:AssumeRole'
+        ]
+        
+        # TODO: Parse policy document
+        # TODO: Check for escalation actions
+        # TODO: Identify combinations that enable escalation
+        # TODO: Return findings
+        pass
+    
+    def check_cross_account_access(self, policy_doc):
+        """
+        Check for cross-account access configurations.
+        
+        Args:
+            policy_doc: Policy document to analyze
+        
+        Returns:
+            List of cross-account access findings
+        """
+        # TODO: Check Principal field for external accounts
+        # TODO: Identify trust relationships
+        # TODO: Return findings
+        pass
+
+if __name__ == "__main__":
+    reviewer = PolicyReviewer()
+    
+    # Sample policy for testing
+    sample_policy = {
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }]
+    }
+    
+    # TODO: Analyze sample policy
+    # TODO: Print findings
+Step 3: Document Findings
+Create /home/ubuntu/iam_findings.md:
+
+# IAM Policy Enumeration Findings
+
+## Executive Summary
+Document key findings from IAM enumeration.
+
+## Methodology
+- Pacu framework automated enumeration
+- Manual policy analysis
+- Privilege escalation path identification
+
+## High Risk Findings
+- [ ] Wildcard permissions (Action: *, Resource: *)
+- [ ] Overprivileged service roles
+- [ ] Missing MFA on privileged accounts
+- [ ] Cross-account trust misconfigurations
+
+## Medium Risk Findings
+- [ ] Unused IAM users and roles
+- [ ] Broad resource access patterns
+- [ ] Inline policies with excessive permissions
+
+## Low Risk Findings
+- [ ] Missing resource tags
+- [ ] Inconsistent naming conventions
+
+## Recommendations
+1. Implement least privilege principle
+2. Regular policy audits
+3. Enable CloudTrail logging
+4. Use AWS Config for compliance
+5. Implement automated policy validation
+
+## Remediation Priority
+1. Remove wildcard permissions
+2. Enable MFA for all users
+3. Review and restrict service roles
+4. Remove unused IAM resources
+Task 4: Automate Enumeration and Reporting
+Step 1: Create Automation Script
+Create /home/ubuntu/automated_iam_enum.py:
+
+#!/usr/bin/env python3
+
+import subprocess
+import logging
+import json
+from datetime import datetime
+
+class PacuAutomation:
+    def __init__(self):
+        self.setup_logging()
+        self.pacu_path = "/home/ubuntu/pacu"
+        self.session_name = "automated-enum"
+    
+    def setup_logging(self):
+        """
+        Configure logging for automation script.
+        """
+        # TODO: Setup logging to file and console
+        # TODO: Set appropriate log level
+        # TODO: Create logger instance
+        pass
+    
+    def run_pacu_module(self, module_name, timeout=300):
+        """
+        Execute a Pacu module and capture output.
+        
+        Args:
+            module_name: Name of Pacu module to run
+            timeout: Command timeout in seconds
+        
+        Returns:
+            Module output or None on failure
+        """
+        # TODO: Construct Pacu command
+        # TODO: Execute using subprocess
+        # TODO: Capture and return output
+        # TODO: Handle errors and timeouts
+        pass
+    
+    def enumerate_iam_resources(self):
+        """
+        Run comprehensive IAM enumeration.
+        
+        Returns:
+            Dictionary of module results
+        """
+        modules = [
+            "iam__enum_users_roles_policies_groups",
+            "iam__enum_permissions",
+            "iam__privesc_scan"
+        ]
+        
+        # TODO: Iterate through modules
+        # TODO: Execute each module
+        # TODO: Collect results
+        # TODO: Return results dictionary
+        pass
+    
+    def generate_report(self, results, output_path):
+        """
+        Generate comprehensive enumeration report.
+        
+        Args:
+            results: Dictionary of enumeration results
+            output_path: Path to save report
+        """
+        # TODO: Format results into report
+        # TODO: Include timestamp and metadata
+        # TODO: Write to output file
+        pass
+    
+    def create_html_dashboard(self, output_path):
+        """
+        Create HTML dashboard of findings.
+        
+        Args:
+            output_path: Path to save HTML file
+        """
+        # TODO: Generate HTML structure
+        # TODO: Add findings sections (high/medium/low risk)
+        # TODO: Include recommendations
+        # TODO: Write to file
+        pass
+
+if __name__ == "__main__":
+    automation = PacuAutomation()
+    
+    # TODO: Run enumeration
+    # TODO: Generate reports
+    # TODO: Create dashboard
+Step 2: Create Monitoring Script
+Create /home/ubuntu/enum_monitor.py:
+
+#!/usr/bin/env python3
+
+import os
+import json
+import logging
+import sqlite3
+from datetime import datetime
+
+class EnumerationMonitor:
+    def __init__(self):
+        self.setup_logging()
+        self.db_path = "/home/ubuntu/pacu/pacu.db"
+        self.log_file = "/home/ubuntu/enum_activity.log"
+    
+    def setup_logging(self):
+        """Configure logging for monitoring."""
+        # TODO: Setup logging configuration
+        pass
+    
+    def monitor_database(self):
+        """
+        Monitor Pacu database for changes.
+        
+        Connects to database and reports on table contents.
+        """
+        # TODO: Connect to SQLite database
+        # TODO: Query table list
+        # TODO: Count records in each table
+        # TODO: Log findings
+        pass
+    
+    def log_activity(self, activity_type, details):
+        """
+        Log enumeration activity.
+        
+        Args:
+            activity_type: Type of activity
+            details: Activity details
+        """
+        # TODO: Create log entry with timestamp
+        # TODO: Write to log file in JSON format
+        pass
+    
+    def generate_activity_summary(self):
+        """
+        Generate summary of all logged activities.
+        
+        Returns:
+            Dictionary with activity statistics
+        """
+        # TODO: Read activity log file
+        # TODO: Parse JSON entries
+        # TODO: Calculate statistics
+        # TODO: Return summary dictionary
+        pass
+    
+    def create_timeline(self, output_path):
+        """
+        Create HTML timeline of activities.
+        
+        Args:
+            output_path: Path to save timeline HTML
+        """
+        # TODO: Read activity log
+        # TODO: Generate HTML timeline
+        # TODO: Write to output file
+        pass
+
+if __name__ == "__main__":
+    monitor = EnumerationMonitor()
+    
+    # TODO: Log sample activities
+    # TODO: Monitor database
+    # TODO: Generate summary and timeline
+Step 3: Execute Automation
+# Make scripts executable
+chmod +x /home/ubuntu/analyze_policies.py
+chmod +x /home/ubuntu/policy_review.py
+chmod +x /home/ubuntu/automated_iam_enum.py
+chmod +x /home/ubuntu/enum_monitor.py
+
+# Run policy analysis
+python3 /home/ubuntu/analyze_policies.py
+
+# Run policy review
+python3 /home/ubuntu/policy_review.py
+
+# Run automated enumeration
+python3 /home/ubuntu/automated_iam_enum.py
+
+# Run monitoring
+python3 /home/ubuntu/enum_monitor.py
+Expected Outcomes
+After completing this lab, you should have:
+
+Functional Pacu installation with configured session
+Enumerated IAM users, roles, and policies from test environment
+Identified security misconfigurations and privilege escalation paths
+Created Python scripts for automated enumeration
+Generated comprehensive security assessment reports
+Documented findings with remediation recommendations
+Generated Files:
+
+/home/ubuntu/iam_analysis_report.txt - Policy analysis results
+/home/ubuntu/iam_findings.md - Documented security findings
+/home/ubuntu/iam_dashboard.html - Visual findings dashboard
+/home/ubuntu/enum_activity.log - Activity log
+/home/ubuntu/pacu_automation.log - Automation execution log
+Troubleshooting Tips
+Issue: Pacu installation fails
+
+# Update pip and retry
+pip3 install --upgrade pip
+pip3 install -r requirements.txt --user
+Issue: Database connection errors
+
+# Check database file permissions
+ls -la /home/ubuntu/pacu/pacu.db
+chmod 644 /home/ubuntu/pacu/pacu.db
+Issue: Module execution fails
+
+# Verify AWS credentials are loaded
+# In Pacu session:
+whoami
+
+# Re-import credentials if needed
+import_keys --profile default
+Issue: Python script errors
+
+# Verify Python version
+python3 --version
+
+# Install missing dependencies
+pip3 install boto3 botocore
+Issue: No data collected
+
+Ensure AWS credentials have appropriate read permissions
+Check CloudTrail logs for API call failures
+Verify network connectivity to AWS endpoints
+Conclusion
+This lab provided hands-on experience with AWS IAM security assessment using the Pacu framework. You learned to enumerate IAM resources, identify security misconfigurations, and automate security testing tasks. Key takeaways include:
+
+Pacu is a powerful framework for AWS security testing
+IAM misconfigurations can lead to privilege escalation
+Automated enumeration improves efficiency and consistency
+Comprehensive reporting is essential for security assessments
+Regular IAM audits are critical for maintaining security posture
+Next Steps:
+
+Practice with different AWS environments
+Explore additional Pacu modules
+Develop custom enumeration scripts
+Study IAM security best practices
+Learn remediation techniques for identified issues
+Security Reminder: Always obtain proper authorization before performing security assessments on any AWS environment. Use these skills responsibly and ethically.
