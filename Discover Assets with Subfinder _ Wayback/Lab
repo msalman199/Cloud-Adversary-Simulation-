@@ -1,0 +1,423 @@
+ Discover Assets with Subfinder + Wayback
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure Subfinder for subdomain enumeration
+Use Wayback Machine to retrieve historical asset data
+Combine reconnaissance techniques for comprehensive asset discovery
+Create Python scripts to automate data collection and analysis
+Generate professional security reports from discovered assets
+Prerequisites
+Basic Linux command line knowledge
+Understanding of DNS and subdomain concepts
+Python programming fundamentals (variables, loops, functions)
+Familiarity with web technologies and HTTP protocols
+Lab Environment
+Al Nafi provides a pre-configured Linux-based cloud machine. Click Start Lab to access your environment. All tools and activities will be performed on this single Linux machine.
+
+Task 1: Install and Configure Subfinder
+Step 1.1: Install Subfinder
+# Update system packages
+sudo apt update && sudo apt upgrade -y
+
+# Install Go programming language
+sudo apt install golang-go -y
+
+# Verify Go installation
+go version
+
+# Install Subfinder
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+
+# Add Go bin to PATH
+echo 'export PATH=$PATH:~/go/bin' >> ~/.bashrc
+source ~/.bashrc
+
+# Verify installation
+subfinder -version
+Step 1.2: Configure API Keys
+# Create configuration directory
+mkdir -p ~/.config/subfinder
+
+# Create provider configuration file
+cat > ~/.config/subfinder/provider-config.yaml << 'EOF'
+# Add your API keys here (optional but recommended)
+virustotal: []
+shodan: []
+github: []
+censys: []
+EOF
+
+# Set permissions
+chmod 600 ~/.config/subfinder/provider-config.yaml
+Step 1.3: Perform Basic Subdomain Discovery
+# Create working directory
+mkdir ~/asset_discovery_lab
+cd ~/asset_discovery_lab
+
+# Run basic subdomain discovery
+subfinder -d example.com -o subdomains.txt
+
+# View results
+cat subdomains.txt
+echo "Total subdomains: $(wc -l < subdomains.txt)"
+Step 1.4: Validate Active Subdomains
+# Install httpx for probing
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+
+# Probe discovered subdomains
+httpx -l subdomains.txt -o active_hosts.txt -status-code -title
+
+# Display results
+cat active_hosts.txt
+echo "Active hosts: $(wc -l < active_hosts.txt)"
+Task 2: Retrieve Historical Data with Wayback Machine
+Step 2.1: Install Wayback Tools
+# Install Python packages
+sudo apt install python3-pip -y
+pip3 install requests waybackpy
+
+# Install waybackurls
+go install github.com/tomnomnom/waybackurls@latest
+
+# Verify installation
+waybackurls --help
+Step 2.2: Collect Historical URLs
+# Create directory for historical data
+mkdir historical_data
+
+# Retrieve historical URLs
+waybackurls example.com > historical_data/wayback_urls.txt
+
+# Remove duplicates
+sort -u historical_data/wayback_urls.txt > historical_data/unique_urls.txt
+
+echo "Historical URLs found: $(wc -l < historical_data/unique_urls.txt)"
+Step 2.3: Analyze Historical Data
+# Extract interesting files
+grep -E '\.(js|json|xml|config|env|bak)$' historical_data/unique_urls.txt > historical_data/interesting_files.txt
+
+# Find API endpoints
+grep -E '/(api|v1|v2|rest|graphql)/' historical_data/unique_urls.txt > historical_data/api_endpoints.txt
+
+# Locate admin panels
+grep -E '/(admin|panel|dashboard)' historical_data/unique_urls.txt > historical_data/admin_panels.txt
+
+# Display summary
+echo "Interesting files: $(wc -l < historical_data/interesting_files.txt)"
+echo "API endpoints: $(wc -l < historical_data/api_endpoints.txt)"
+echo "Admin panels: $(wc -l < historical_data/admin_panels.txt)"
+Task 3: Automate Discovery with Python
+Step 3.1: Create Asset Discovery Script
+Create a file named asset_discovery.py:
+
+#!/usr/bin/env python3
+import subprocess
+import json
+import sys
+from datetime import datetime
+
+class AssetDiscovery:
+    def __init__(self, target_domain):
+        """
+        Initialize asset discovery for target domain.
+        
+        Args:
+            target_domain: Domain to scan
+        """
+        self.target_domain = target_domain
+        self.results = {
+            'domain': target_domain,
+            'timestamp': datetime.now().isoformat(),
+            'subdomains': [],
+            'active_hosts': [],
+            'historical_urls': []
+        }
+    
+    def run_subfinder(self):
+        """
+        Execute Subfinder to discover subdomains.
+        
+        TODO: Implement subprocess call to run subfinder
+        TODO: Parse output and populate self.results['subdomains']
+        TODO: Handle errors appropriately
+        """
+        pass
+    
+    def probe_hosts(self):
+        """
+        Probe discovered subdomains for active hosts.
+        
+        TODO: Write subdomains to temporary file
+        TODO: Execute httpx to probe hosts
+        TODO: Parse results and populate self.results['active_hosts']
+        TODO: Clean up temporary files
+        """
+        pass
+    
+    def collect_wayback_data(self):
+        """
+        Collect historical URLs from Wayback Machine.
+        
+        TODO: Execute waybackurls command
+        TODO: Parse output and populate self.results['historical_urls']
+        TODO: Filter valid URLs only
+        """
+        pass
+    
+    def analyze_findings(self):
+        """
+        Analyze collected data for security findings.
+        
+        TODO: Search for API endpoints in historical URLs
+        TODO: Identify admin panels and sensitive directories
+        TODO: Find backup and configuration files
+        TODO: Return dictionary of categorized findings
+        """
+        pass
+    
+    def generate_json_report(self):
+        """
+        Generate JSON report of findings.
+        
+        TODO: Create JSON file with all results
+        TODO: Include timestamp and summary statistics
+        """
+        pass
+    
+    def run_full_discovery(self):
+        """
+        Execute complete asset discovery workflow.
+        
+        TODO: Call all discovery methods in sequence
+        TODO: Handle errors and print progress
+        TODO: Generate final report
+        """
+        pass
+
+def main():
+    """
+    Main entry point for the script.
+    
+    TODO: Parse command line arguments
+    TODO: Validate domain input
+    TODO: Create AssetDiscovery instance
+    TODO: Run full discovery process
+    """
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3.2: Create HTML Report Generator
+Create a file named report_generator.py:
+
+#!/usr/bin/env python3
+import json
+import sys
+
+class HTMLReportGenerator:
+    def __init__(self, json_report_path):
+        """
+        Initialize report generator with JSON data.
+        
+        Args:
+            json_report_path: Path to JSON report file
+        """
+        self.report_path = json_report_path
+        self.data = None
+    
+    def load_data(self):
+        """
+        Load JSON report data.
+        
+        TODO: Open and parse JSON file
+        TODO: Store data in self.data
+        TODO: Handle file not found errors
+        """
+        pass
+    
+    def generate_html_header(self):
+        """
+        Generate HTML header with CSS styling.
+        
+        TODO: Return HTML string with header and CSS
+        TODO: Include title and basic styling
+        """
+        pass
+    
+    def generate_summary_section(self):
+        """
+        Generate summary statistics section.
+        
+        TODO: Create HTML for summary statistics
+        TODO: Include subdomain count, active hosts, etc.
+        """
+        pass
+    
+    def generate_subdomain_table(self):
+        """
+        Generate table of discovered subdomains.
+        
+        TODO: Create HTML table with subdomain data
+        TODO: Mark active vs inactive hosts
+        TODO: Limit to first 50 entries
+        """
+        pass
+    
+    def generate_findings_section(self):
+        """
+        Generate security findings section.
+        
+        TODO: Create sections for each finding category
+        TODO: Highlight critical findings
+        TODO: Include recommendations
+        """
+        pass
+    
+    def save_report(self, output_path):
+        """
+        Save complete HTML report to file.
+        
+        TODO: Combine all HTML sections
+        TODO: Write to output file
+        TODO: Print success message
+        """
+        pass
+
+def main():
+    """
+    Main entry point for report generator.
+    
+    TODO: Parse command line arguments
+    TODO: Create HTMLReportGenerator instance
+    TODO: Generate and save report
+    """
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3.3: Create Monitoring Script
+Create a file named asset_monitor.py:
+
+#!/usr/bin/env python3
+import json
+import os
+from datetime import datetime
+
+class AssetMonitor:
+    def __init__(self, domain):
+        """
+        Initialize asset monitoring for domain.
+        
+        Args:
+            domain: Target domain to monitor
+        """
+        self.domain = domain
+        self.reports_dir = f"reports_{domain}"
+    
+    def save_report(self, report_data):
+        """
+        Save report with timestamp for monitoring.
+        
+        TODO: Create reports directory if needed
+        TODO: Generate timestamped filename
+        TODO: Save report data as JSON
+        """
+        pass
+    
+    def get_latest_reports(self, count=2):
+        """
+        Retrieve latest N reports for comparison.
+        
+        TODO: List all reports in directory
+        TODO: Sort by modification time
+        TODO: Return paths to latest reports
+        """
+        pass
+    
+    def compare_reports(self, old_report, new_report):
+        """
+        Compare two reports and identify changes.
+        
+        TODO: Load both report files
+        TODO: Compare subdomains, active hosts, URLs
+        TODO: Identify additions and removals
+        TODO: Return dictionary of changes
+        """
+        pass
+    
+    def generate_change_report(self, changes):
+        """
+        Generate readable change report.
+        
+        TODO: Format changes for display
+        TODO: Highlight new and removed assets
+        TODO: Save change report to file
+        """
+        pass
+
+def main():
+    """
+    Main entry point for monitoring.
+    
+    TODO: Parse command line arguments
+    TODO: Create AssetMonitor instance
+    TODO: Compare latest reports if available
+    """
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3.4: Test Your Scripts
+# Make scripts executable
+chmod +x asset_discovery.py report_generator.py asset_monitor.py
+
+# Test asset discovery (after implementing)
+python3 asset_discovery.py example.com
+
+# Generate HTML report (after implementing)
+python3 report_generator.py asset_discovery_report_example.com.json
+
+# Set up monitoring (after implementing)
+python3 asset_monitor.py example.com
+Expected Outcomes
+After completing this lab, you should have:
+
+Discovered subdomains: List of all subdomains for target domain
+Active hosts: Validated list of responding web servers
+Historical data: URLs and endpoints from Wayback Machine
+Security findings: Categorized list of interesting discoveries
+Automated scripts: Python tools for repeatable asset discovery
+Professional reports: JSON and HTML formatted reports
+Troubleshooting Tips
+Issue: Subfinder not found after installation
+
+Solution: Ensure ~/go/bin is in your PATH. Run source ~/.bashrc or restart terminal.
+Issue: No subdomains discovered
+
+Solution: Try a different domain (e.g., tesla.com, hackerone.com). Some domains have limited public subdomains.
+Issue: Waybackurls returns no results
+
+Solution: The domain may not have archived data. Try well-established domains with long history.
+Issue: Python script fails with import errors
+
+Solution: Install missing packages: pip3 install requests waybackpy
+Issue: Permission denied when running scripts
+
+Solution: Make scripts executable: chmod +x script_name.py
+Conclusion
+In this lab, you learned to discover and analyze digital assets using Subfinder and Wayback Machine. You practiced:
+
+Passive reconnaissance techniques for subdomain enumeration
+Historical data analysis to identify legacy assets and endpoints
+Automation through Python scripting for repeatable workflows
+Report generation for professional documentation of findings
+These skills are essential for security assessments, bug bounty hunting, and attack surface management. The automated scripts you created can be reused and extended for ongoing asset monitoring.
+
+Key Takeaways:
+
+Passive reconnaissance reveals assets without direct interaction
+Historical data often exposes forgotten or legacy systems
+Automation enables continuous monitoring and comparison
+Proper documentation is critical for security assessments
+Continue practicing with different domains and expand your scripts with additional features like notification systems, database storage, or integration with other security tools.
