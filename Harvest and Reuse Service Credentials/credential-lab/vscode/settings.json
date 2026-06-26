@@ -1,0 +1,7 @@
+{
+  "terminal.integrated.env.linux": {
+    "API_KEY": "prod-api-key-abc123",
+    "DATABASE_URL": "postgresql://user:SecretPass@server.com:5432/db",
+    "GITHUB_TOKEN": "ghp_1234567890abcdefghijklmnop"
+  }
+}
