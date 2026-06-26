@@ -1,0 +1,619 @@
+: Escalate Privileges in AWS Using EC2 Instance Roles
+Objectives
+By the end of this lab, students will be able to:
+
+Identify EC2 instance roles with excessive IAM permissions
+Exploit misconfigured EC2 roles to escalate privileges in AWS environments
+Automate privilege escalation detection using Python and AWS SDK
+Implement defensive measures to prevent EC2 role-based privilege escalation
+Recognize common IAM misconfigurations that enable privilege escalation
+Prerequisites
+Basic understanding of AWS IAM, EC2, and STS services
+Familiarity with Linux command line operations
+Basic Python programming knowledge
+Understanding of JSON format and AWS policy documents
+Lab Environment
+Ready-to-Use Cloud Machines: Al Nafi provides Linux-based cloud machines for this lab. Click Start Lab to access your pre-configured environment with:
+
+AWS CLI v2
+Python 3.8+ with Boto3
+Text editors (nano, vim)
+All necessary dependencies pre-installed
+Task 1: Identify EC2 Roles with Excessive Permissions
+Step 1: Set Up Lab Environment
+Create a working directory and verify tools:
+
+mkdir ~/aws-escalation-lab && cd ~/aws-escalation-lab
+aws --version
+python3 --version
+Step 2: Create Sample IAM Policy for Analysis
+Create a vulnerable policy file representing common misconfigurations:
+
+cat > vulnerable_policy.json << 'EOF'
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:*",
+                "ec2:*",
+                "sts:AssumeRole"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+Step 3: Create Policy Analysis Script
+Develop a Python script to analyze IAM policies for privilege escalation vectors:
+
+#!/usr/bin/env python3
+"""
+analyze_permissions.py - Analyze IAM policies for escalation risks
+"""
+
+import json
+import sys
+
+def analyze_policy_permissions(policy_file):
+    """
+    Analyze IAM policy for potential privilege escalation vectors.
+    
+    Args:
+        policy_file: Path to JSON policy file
+    
+    Returns:
+        List of escalation vectors found
+    """
+    # TODO: Load and parse the policy JSON file
+    # TODO: Define list of dangerous IAM actions
+    # TODO: Iterate through policy statements
+    # TODO: Check for wildcards and overly permissive actions
+    # TODO: Identify actions that enable privilege escalation
+    # TODO: Return list of findings with risk levels
+    pass
+
+def print_findings(vectors):
+    """
+    Display analysis findings in formatted output.
+    
+    Args:
+        vectors: List of escalation vectors
+    """
+    # TODO: Print header
+    # TODO: Iterate through vectors and display details
+    # TODO: Show action, resource, and risk level
+    pass
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 analyze_permissions.py <policy_file>")
+        sys.exit(1)
+    
+    # TODO: Call analyze_policy_permissions()
+    # TODO: Call print_findings()
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as analyze_permissions.py and make executable:
+
+chmod +x analyze_permissions.py
+Step 4: Enumerate Current Role Permissions
+Create a script to enumerate EC2 instance role information:
+
+#!/usr/bin/env python3
+"""
+enumerate_roles.py - Enumerate EC2 instance role permissions
+"""
+
+import boto3
+from botocore.exceptions import ClientError
+
+def get_instance_role():
+    """
+    Retrieve current EC2 instance role from metadata service.
+    
+    Returns:
+        Role name string or None
+    """
+    # TODO: Query EC2 metadata service for instance role
+    # TODO: Parse the role name from metadata
+    # TODO: Handle errors if not running on EC2
+    pass
+
+def get_role_policies(role_name):
+    """
+    List all policies attached to the specified role.
+    
+    Args:
+        role_name: IAM role name
+    
+    Returns:
+        List of attached policies
+    """
+    # TODO: Create IAM client
+    # TODO: List attached managed policies
+    # TODO: List inline policies
+    # TODO: Return combined policy list
+    pass
+
+def check_dangerous_permissions(policies):
+    """
+    Check if policies contain dangerous permissions.
+    
+    Args:
+        policies: List of policy documents
+    
+    Returns:
+        List of dangerous permissions found
+    """
+    # TODO: Define dangerous permission patterns
+    # TODO: Parse each policy document
+    # TODO: Check for escalation-enabling actions
+    # TODO: Return findings
+    pass
+
+def main():
+    # TODO: Get current instance role
+    # TODO: Retrieve role policies
+    # TODO: Check for dangerous permissions
+    # TODO: Display results
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as enumerate_roles.py and make executable.
+
+Task 2: Exploit EC2 Roles to Escalate Privileges
+Step 1: Create Administrative Role Exploitation Script
+Develop a script that demonstrates creating a new administrative role:
+
+#!/usr/bin/env python3
+"""
+create_admin_role.py - Demonstrate privilege escalation via role creation
+"""
+
+import json
+import boto3
+from botocore.exceptions import ClientError
+
+def create_trust_policy():
+    """
+    Create trust policy allowing role assumption.
+    
+    Returns:
+        Trust policy document as dictionary
+    """
+    # TODO: Define trust policy with EC2 and account principals
+    # TODO: Return policy document
+    pass
+
+def create_admin_policy():
+    """
+    Create administrative policy with full permissions.
+    
+    Returns:
+        Admin policy document as dictionary
+    """
+    # TODO: Define policy with wildcard permissions
+    # TODO: Return policy document
+    pass
+
+def create_escalated_role(role_name, trust_policy, admin_policy):
+    """
+    Create new IAM role with administrative privileges.
+    
+    Args:
+        role_name: Name for the new role
+        trust_policy: Trust relationship policy
+        admin_policy: Permissions policy
+    
+    Returns:
+        Role ARN if successful
+    """
+    # TODO: Create IAM client
+    # TODO: Create the role with trust policy
+    # TODO: Create or attach administrative policy
+    # TODO: Return role ARN
+    pass
+
+def create_instance_profile(role_name):
+    """
+    Create EC2 instance profile for the role.
+    
+    Args:
+        role_name: IAM role name
+    
+    Returns:
+        Instance profile ARN
+    """
+    # TODO: Create instance profile
+    # TODO: Add role to instance profile
+    # TODO: Return profile ARN
+    pass
+
+def main():
+    role_name = "EscalatedAdminRole"
+    
+    # TODO: Create trust policy
+    # TODO: Create admin policy
+    # TODO: Create escalated role
+    # TODO: Create instance profile
+    # TODO: Display success message with ARN
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Demonstrate Role Assumption
+Create a script showing how to assume the newly created role:
+
+#!/usr/bin/env python3
+"""
+assume_role.py - Assume escalated role and obtain credentials
+"""
+
+import boto3
+import json
+from datetime import datetime
+
+def assume_escalated_role(role_arn, session_name):
+    """
+    Assume the escalated role and retrieve temporary credentials.
+    
+    Args:
+        role_arn: ARN of role to assume
+        session_name: Name for the session
+    
+    Returns:
+        Dictionary with temporary credentials
+    """
+    # TODO: Create STS client
+    # TODO: Call assume_role with role ARN
+    # TODO: Extract credentials from response
+    # TODO: Return credentials dictionary
+    pass
+
+def save_credentials(credentials, filename):
+    """
+    Save credentials to file for later use.
+    
+    Args:
+        credentials: Credentials dictionary
+        filename: Output file path
+    """
+    # TODO: Format credentials for AWS CLI
+    # TODO: Write to JSON file
+    pass
+
+def display_export_commands(credentials):
+    """
+    Display shell commands to export credentials.
+    
+    Args:
+        credentials: Credentials dictionary
+    """
+    # TODO: Print export commands for bash
+    # TODO: Include AccessKeyId, SecretAccessKey, SessionToken
+    pass
+
+def main():
+    role_arn = "arn:aws:iam::ACCOUNT_ID:role/EscalatedAdminRole"
+    session_name = f"EscalatedSession-{int(datetime.now().timestamp())}"
+    
+    # TODO: Assume the role
+    # TODO: Save credentials to file
+    # TODO: Display export commands
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3: Explore Additional Escalation Techniques
+Create a script demonstrating alternative escalation methods:
+
+#!/usr/bin/env python3
+"""
+additional_techniques.py - Alternative privilege escalation methods
+"""
+
+import boto3
+import json
+
+def technique_modify_inline_policy(role_name):
+    """
+    Add administrative inline policy to existing role.
+    
+    Args:
+        role_name: Target role name
+    """
+    # TODO: Create admin policy document
+    # TODO: Use put_role_policy to add inline policy
+    # TODO: Display success message
+    pass
+
+def technique_create_backdoor_user(username):
+    """
+    Create backdoor IAM user with admin access.
+    
+    Args:
+        username: Name for backdoor user
+    """
+    # TODO: Create IAM user
+    # TODO: Attach AdministratorAccess policy
+    # TODO: Create access keys
+    # TODO: Return and display credentials
+    pass
+
+def technique_launch_privileged_instance(instance_profile_name):
+    """
+    Launch EC2 instance with privileged role attached.
+    
+    Args:
+        instance_profile_name: Instance profile to attach
+    """
+    # TODO: Create EC2 client
+    # TODO: Define instance parameters with IAM profile
+    # TODO: Launch instance with user data script
+    # TODO: Return instance ID
+    pass
+
+def main():
+    print("=== Alternative Escalation Techniques ===\n")
+    
+    # TODO: Demonstrate technique 1 - inline policy
+    # TODO: Demonstrate technique 2 - backdoor user
+    # TODO: Demonstrate technique 3 - privileged instance
+    pass
+
+if __name__ == "__main__":
+    main()
+Task 3: Automate Detection and Prevention
+Step 1: Create Automated Detection Script
+Develop a script to detect privilege escalation attempts:
+
+#!/usr/bin/env python3
+"""
+detect_escalation.py - Detect privilege escalation activities
+"""
+
+import boto3
+from datetime import datetime, timedelta
+
+class EscalationDetector:
+    def __init__(self):
+        self.cloudtrail_client = None
+        self.suspicious_events = []
+    
+    def analyze_cloudtrail_events(self, hours=24):
+        """
+        Analyze CloudTrail events for suspicious IAM activities.
+        
+        Args:
+            hours: Number of hours to look back
+        
+        Returns:
+            List of suspicious events
+        """
+        # TODO: Create CloudTrail client
+        # TODO: Define suspicious event names (CreateRole, AttachRolePolicy, etc.)
+        # TODO: Query CloudTrail logs for time period
+        # TODO: Filter for suspicious activities
+        # TODO: Return list of suspicious events
+        pass
+    
+    def check_overprivileged_roles(self):
+        """
+        Identify roles with excessive permissions.
+        
+        Returns:
+            List of overprivileged roles
+        """
+        # TODO: Create IAM client
+        # TODO: List all roles
+        # TODO: Check each role's policies
+        # TODO: Identify roles with admin or wildcard permissions
+        # TODO: Return findings
+        pass
+    
+    def generate_alert(self, event):
+        """
+        Generate alert for suspicious activity.
+        
+        Args:
+            event: Suspicious event details
+        """
+        # TODO: Format alert message
+        # TODO: Include event details, user, time
+        # TODO: Display or log alert
+        pass
+    
+    def run_detection(self):
+        """Execute complete detection workflow."""
+        # TODO: Analyze CloudTrail events
+        # TODO: Check for overprivileged roles
+        # TODO: Generate alerts for findings
+        # TODO: Create summary report
+        pass
+
+def main():
+    detector = EscalationDetector()
+    detector.run_detection()
+
+if __name__ == "__main__":
+    main()
+Step 2: Implement Prevention Measures
+Create a script demonstrating security best practices:
+
+#!/usr/bin/env python3
+"""
+implement_prevention.py - Implement privilege escalation prevention
+"""
+
+import boto3
+import json
+
+def create_permission_boundary():
+    """
+    Create IAM permission boundary to limit escalation.
+    
+    Returns:
+        Permission boundary policy ARN
+    """
+    # TODO: Define permission boundary policy
+    # TODO: Deny dangerous IAM actions
+    # TODO: Create policy in AWS
+    # TODO: Return policy ARN
+    pass
+
+def apply_permission_boundary(role_name, boundary_arn):
+    """
+    Apply permission boundary to existing role.
+    
+    Args:
+        role_name: Target role name
+        boundary_arn: Permission boundary policy ARN
+    """
+    # TODO: Create IAM client
+    # TODO: Apply boundary using put_role_permissions_boundary
+    # TODO: Verify application
+    pass
+
+def implement_least_privilege(role_name):
+    """
+    Refactor role to follow least privilege principle.
+    
+    Args:
+        role_name: Role to refactor
+    """
+    # TODO: Analyze current role permissions
+    # TODO: Identify unnecessary permissions
+    # TODO: Create minimal policy
+    # TODO: Replace existing policies
+    pass
+
+def enable_cloudtrail_monitoring():
+    """
+    Configure CloudTrail for security monitoring.
+    
+    Returns:
+        Trail ARN
+    """
+    # TODO: Create CloudTrail client
+    # TODO: Create or update trail
+    # TODO: Enable log file validation
+    # TODO: Configure S3 bucket for logs
+    # TODO: Return trail ARN
+    pass
+
+def main():
+    print("=== Implementing Prevention Measures ===\n")
+    
+    # TODO: Create permission boundary
+    # TODO: Apply to vulnerable roles
+    # TODO: Implement least privilege
+    # TODO: Enable monitoring
+    # TODO: Display summary
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3: Create Comprehensive Security Audit Script
+#!/usr/bin/env python3
+"""
+security_audit.py - Comprehensive EC2 role security audit
+"""
+
+import boto3
+import json
+
+def audit_all_ec2_roles():
+    """
+    Audit all EC2 instance roles for security issues.
+    
+    Returns:
+        Audit report dictionary
+    """
+    # TODO: List all roles with EC2 trust relationship
+    # TODO: Check each role's permissions
+    # TODO: Identify security issues
+    # TODO: Generate findings report
+    pass
+
+def check_role_trust_policies():
+    """
+    Verify trust policies are properly configured.
+    
+    Returns:
+        List of trust policy issues
+    """
+    # TODO: Examine trust relationships
+    # TODO: Check for overly permissive principals
+    # TODO: Identify cross-account risks
+    pass
+
+def generate_remediation_plan(findings):
+    """
+    Create remediation plan for identified issues.
+    
+    Args:
+        findings: List of security findings
+    
+    Returns:
+        Remediation plan with prioritized actions
+    """
+    # TODO: Prioritize findings by severity
+    # TODO: Generate specific remediation steps
+    # TODO: Create timeline for fixes
+    pass
+
+def main():
+    # TODO: Run comprehensive audit
+    # TODO: Generate findings report
+    # TODO: Create remediation plan
+    # TODO: Save results to file
+    pass
+
+if __name__ == "__main__":
+    main()
+Expected Outcomes
+After completing this lab, you should have:
+
+Identified multiple privilege escalation vectors in EC2 instance roles
+Successfully demonstrated privilege escalation techniques (in simulation)
+Created automated detection scripts for suspicious IAM activities
+Implemented prevention measures including permission boundaries
+Generated comprehensive security audit reports
+Key Files Created:
+
+analyze_permissions.py - Policy analysis tool
+enumerate_roles.py - Role enumeration script
+create_admin_role.py - Escalation demonstration
+detect_escalation.py - Detection automation
+implement_prevention.py - Prevention measures
+security_audit.py - Comprehensive audit tool
+Troubleshooting Tips
+Issue: "Access Denied" errors when running scripts
+
+Verify AWS credentials are properly configured
+Check that simulated environment has necessary permissions
+Review IAM policy syntax for errors
+Issue: Scripts not finding roles or policies
+
+Ensure you're working in the correct AWS region
+Verify role names match exactly (case-sensitive)
+Check that resources were created successfully
+Issue: CloudTrail events not appearing
+
+CloudTrail has a delay of 5-15 minutes for event delivery
+Verify CloudTrail is enabled in your region
+Check S3 bucket permissions for log delivery
+Conclusion
+This lab demonstrated critical security concepts around EC2 instance roles and privilege escalation in AWS. You learned to identify misconfigured roles, exploit excessive permissions, and implement defensive measures. Key takeaways:
+
+Least Privilege: Always grant minimum necessary permissions
+Permission Boundaries: Use boundaries to prevent escalation
+Monitoring: Enable CloudTrail and regularly audit IAM activities
+Trust Policies: Carefully configure role trust relationships
+Regular Audits: Continuously review and refine IAM permissions
+In production environments, implement these security controls proactively and maintain vigilant monitoring for suspicious activities. Understanding attack vectors is essential for building robust cloud security defenses.
