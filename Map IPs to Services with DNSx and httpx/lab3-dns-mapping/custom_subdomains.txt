@@ -1,0 +1,13 @@
+api
+admin
+dev
+test
+staging
+prod
+www
+mail
+ftp
+ssh
+vpn
+portal
+dashboard
