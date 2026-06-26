@@ -1,0 +1,615 @@
+Abuse Azure SSO via Misconfigured OAuth Flows
+Objectives
+By the end of this lab, students will be able to:
+
+Enumerate Azure SSO configurations and identify OAuth misconfigurations
+Exploit OAuth flow weaknesses including redirect URI validation bypass
+Intercept and manipulate authorization codes to gain unauthorized access
+Automate OAuth exploitation using Python scripts
+Implement defensive measures to prevent OAuth-based attacks
+Prerequisites
+Basic understanding of OAuth 2.0 and OpenID Connect protocols
+Familiarity with Azure Active Directory concepts
+Python programming fundamentals
+Understanding of HTTP requests and REST APIs
+Lab Environment Setup
+Ready-to-Use Cloud Machines: Al Nafi provides Linux-based cloud machines with all necessary tools pre-installed. Simply click Start Lab to begin.
+
+Your lab machine includes:
+
+Python 3.x with requests library
+curl and wget utilities
+Text editors (nano, vim)
+Network analysis tools
+Task 1: Enumerate Azure OAuth Configuration
+Step 1: Create Working Directory
+Set up your lab environment:
+
+mkdir ~/azure-oauth-lab
+cd ~/azure-oauth-lab
+Create a configuration file with target application details:
+
+cat > config.env << EOF
+TENANT_ID=common
+CLIENT_ID=your-client-id-here
+REDIRECT_URI=http://localhost:8080/callback
+SCOPE=openid profile email
+EOF
+Step 2: Create OAuth Discovery Script
+Create a Python script to discover OAuth endpoints:
+
+#!/usr/bin/env python3
+"""
+OAuth Configuration Discovery Tool
+Students: Complete the TODO sections to enumerate Azure OAuth endpoints
+"""
+
+import requests
+import json
+import sys
+
+class OAuthEnumerator:
+    def __init__(self, tenant_id):
+        self.tenant_id = tenant_id
+        self.base_url = f"https://login.microsoftonline.com/{tenant_id}"
+        
+    def discover_endpoints(self):
+        """
+        Discover OAuth endpoints from OpenID configuration
+        
+        TODO: Implement the following:
+        1. Construct the well-known configuration URL
+        2. Make GET request to retrieve configuration
+        3. Parse and display key endpoints (authorization, token, userinfo)
+        4. Return the configuration dictionary
+        """
+        discovery_url = f"{self.base_url}/.well-known/openid-configuration"
+        
+        # TODO: Implement discovery logic
+        pass
+    
+    def test_redirect_validation(self, client_id):
+        """
+        Test redirect URI validation
+        
+        TODO: Implement the following:
+        1. Create list of test redirect URIs (including malicious ones)
+        2. For each redirect, construct authorization URL
+        3. Send request and check response status
+        4. Identify which redirects are accepted
+        """
+        test_redirects = [
+            "http://localhost:8080/callback",
+            "https://evil.com/callback",
+            # TODO: Add more test cases
+        ]
+        
+        # TODO: Implement redirect validation testing
+        pass
+    
+    def enumerate_scopes(self, client_id):
+        """
+        Enumerate available OAuth scopes
+        
+        TODO: Implement the following:
+        1. Create list of common Azure scopes
+        2. Test each scope with authorization endpoint
+        3. Identify which scopes are available
+        4. Return list of available scopes
+        """
+        common_scopes = [
+            "openid", "profile", "email",
+            "User.Read", "Mail.Read",
+            # TODO: Add more scopes to test
+        ]
+        
+        # TODO: Implement scope enumeration
+        pass
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python3 oauth_enum.py <tenant_id> <client_id>")
+        sys.exit(1)
+    
+    tenant_id = sys.argv[1]
+    client_id = sys.argv[2]
+    
+    # TODO: Create enumerator instance and run discovery
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as oauth_enum.py and make executable:
+
+chmod +x oauth_enum.py
+Step 3: Run Enumeration
+Execute the enumeration script:
+
+source config.env
+python3 oauth_enum.py $TENANT_ID $CLIENT_ID
+Expected Output: List of discovered endpoints, accepted redirect URIs, and available scopes.
+
+Task 2: Exploit OAuth Authorization Code Flow
+Step 1: Create Authorization Code Interceptor
+Build a local server to intercept authorization codes:
+
+#!/usr/bin/env python3
+"""
+OAuth Authorization Code Interceptor
+Students: Complete the TODO sections to capture authorization codes
+"""
+
+import http.server
+import socketserver
+import urllib.parse
+import threading
+
+class AuthCodeHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        """
+        Handle OAuth callback requests
+        
+        TODO: Implement the following:
+        1. Parse the URL query parameters
+        2. Extract 'code' and 'state' parameters
+        3. Save the authorization code to a file
+        4. Send HTML response to browser
+        """
+        parsed_path = urllib.parse.urlparse(self.path)
+        query_params = urllib.parse.parse_qs(parsed_path.query)
+        
+        # TODO: Implement code extraction and storage
+        pass
+    
+    def log_message(self, format, *args):
+        pass  # Suppress default logging
+
+class CodeInterceptor:
+    def __init__(self, port=8080):
+        self.port = port
+        self.server = None
+        
+    def start_server(self):
+        """
+        Start HTTP server to intercept codes
+        
+        TODO: Implement the following:
+        1. Create TCPServer instance
+        2. Start server in daemon thread
+        3. Return success/failure status
+        """
+        # TODO: Implement server startup
+        pass
+    
+    def generate_auth_url(self, tenant_id, client_id, scope):
+        """
+        Generate OAuth authorization URL
+        
+        TODO: Implement the following:
+        1. Construct base authorization URL
+        2. Add required parameters (client_id, response_type, redirect_uri, scope)
+        3. Return complete authorization URL
+        """
+        # TODO: Implement URL generation
+        pass
+
+def main():
+    interceptor = CodeInterceptor()
+    
+    # TODO: Start server and generate malicious URL
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as code_interceptor.py and make executable.
+
+Step 2: Create Token Exchange Script
+Build a script to exchange authorization codes for access tokens:
+
+#!/usr/bin/env python3
+"""
+OAuth Token Exchange Tool
+Students: Complete the TODO sections to exchange codes for tokens
+"""
+
+import requests
+import json
+import base64
+
+class TokenExchanger:
+    def __init__(self, tenant_id, client_id, client_secret=None):
+        self.tenant_id = tenant_id
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.token_endpoint = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
+    
+    def exchange_code(self, auth_code, redirect_uri):
+        """
+        Exchange authorization code for access token
+        
+        TODO: Implement the following:
+        1. Prepare token request headers and data
+        2. Include grant_type, client_id, code, redirect_uri
+        3. Send POST request to token endpoint
+        4. Parse and return token response
+        """
+        # TODO: Implement token exchange
+        pass
+    
+    def decode_jwt(self, token):
+        """
+        Decode JWT token to extract claims
+        
+        TODO: Implement the following:
+        1. Split JWT into header, payload, signature
+        2. Base64 decode header and payload
+        3. Parse JSON and extract user information
+        4. Display key claims (name, email, oid, etc.)
+        """
+        # TODO: Implement JWT decoding
+        pass
+    
+    def test_token(self, access_token):
+        """
+        Test access token with Microsoft Graph API
+        
+        TODO: Implement the following:
+        1. Create authorization header with Bearer token
+        2. Test common Graph API endpoints (/me, /me/messages)
+        3. Display results for successful requests
+        4. Handle errors appropriately
+        """
+        test_endpoints = [
+            "https://graph.microsoft.com/v1.0/me",
+            "https://graph.microsoft.com/v1.0/me/messages"
+        ]
+        
+        # TODO: Implement token testing
+        pass
+
+def main():
+    # TODO: Read intercepted code from file
+    # TODO: Exchange code for tokens
+    # TODO: Test access token
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as token_exchange.py and make executable.
+
+Step 3: Execute the Exploit Chain
+Run the complete attack sequence:
+
+# Terminal 1: Start code interceptor
+python3 code_interceptor.py
+
+# Terminal 2: Simulate user authorization (in real attack, send URL to victim)
+# The interceptor will display an authorization URL
+# Open it in a browser or use curl to simulate
+
+# Terminal 3: Exchange captured code for tokens
+python3 token_exchange.py
+Task 3: Automate OAuth Exploitation
+Step 1: Create Comprehensive Automation Framework
+Build an integrated exploitation framework:
+
+#!/usr/bin/env python3
+"""
+OAuth Exploitation Automation Framework
+Students: Complete the TODO sections to create automated exploit tool
+"""
+
+import requests
+import json
+import threading
+import time
+from datetime import datetime
+
+class OAuthExploitFramework:
+    def __init__(self, tenant_id, client_id, port=8080):
+        self.tenant_id = tenant_id
+        self.client_id = client_id
+        self.port = port
+        self.captured_codes = []
+        
+    def run_full_enumeration(self):
+        """
+        Run complete OAuth enumeration
+        
+        TODO: Implement the following:
+        1. Discover OAuth configuration
+        2. Test redirect URI validation
+        3. Enumerate available scopes
+        4. Generate report of findings
+        """
+        # TODO: Implement full enumeration
+        pass
+    
+    def generate_phishing_campaign(self, scopes):
+        """
+        Generate phishing URLs with different scope combinations
+        
+        TODO: Implement the following:
+        1. Create multiple scope combinations
+        2. Generate authorization URLs for each
+        3. Save URLs to file for distribution
+        4. Include tracking parameters
+        """
+        # TODO: Implement phishing URL generation
+        pass
+    
+    def automated_token_theft(self):
+        """
+        Automate the complete token theft process
+        
+        TODO: Implement the following:
+        1. Start code interceptor server
+        2. Generate and display phishing URL
+        3. Wait for authorization code
+        4. Automatically exchange code for tokens
+        5. Test and validate stolen tokens
+        """
+        # TODO: Implement automated exploitation
+        pass
+    
+    def generate_report(self):
+        """
+        Generate exploitation report
+        
+        TODO: Implement the following:
+        1. Summarize discovered vulnerabilities
+        2. List captured tokens and their capabilities
+        3. Provide remediation recommendations
+        4. Save report to JSON and HTML formats
+        """
+        # TODO: Implement report generation
+        pass
+
+def main():
+    # TODO: Parse command-line arguments
+    # TODO: Initialize framework
+    # TODO: Run automated exploitation
+    # TODO: Generate final report
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as oauth_exploit_automation.py and make executable.
+
+Step 2: Create PowerShell Automation Script
+For Windows environments, create a PowerShell automation script:
+
+# OAuth Exploitation PowerShell Script
+# Students: Complete the TODO sections
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$TenantId,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$ClientId,
+    
+    [Parameter(Mandatory=$false)]
+    [int]$Port = 8080
+)
+
+function Discover-OAuthConfig {
+    <#
+    .SYNOPSIS
+    Discover OAuth configuration endpoints
+    
+    .DESCRIPTION
+    TODO: Implement the following:
+    1. Construct well-known configuration URL
+    2. Make web request to retrieve configuration
+    3. Parse and display endpoints
+    4. Return configuration object
+    #>
+    
+    # TODO: Implement discovery logic
+}
+
+function Test-RedirectValidation {
+    <#
+    .SYNOPSIS
+    Test redirect URI validation
+    
+    .DESCRIPTION
+    TODO: Implement the following:
+    1. Define test redirect URIs
+    2. Test each redirect with authorization endpoint
+    3. Identify accepted redirects
+    4. Return results
+    #>
+    
+    # TODO: Implement redirect testing
+}
+
+function Start-CodeInterceptor {
+    <#
+    .SYNOPSIS
+    Start HTTP listener to intercept authorization codes
+    
+    .DESCRIPTION
+    TODO: Implement the following:
+    1. Create HTTP listener on specified port
+    2. Handle incoming callback requests
+    3. Extract and save authorization codes
+    4. Return captured codes
+    #>
+    
+    # TODO: Implement code interceptor
+}
+
+function Invoke-TokenExchange {
+    <#
+    .SYNOPSIS
+    Exchange authorization code for access token
+    
+    .DESCRIPTION
+    TODO: Implement the following:
+    1. Prepare token request
+    2. Send POST to token endpoint
+    3. Parse token response
+    4. Return tokens
+    #>
+    
+    # TODO: Implement token exchange
+}
+
+# Main execution
+# TODO: Call functions in sequence to perform automated exploitation
+Save as oauth_exploit.ps1.
+
+Step 3: Run Automated Exploitation
+Execute the automation framework:
+
+# Python automation
+python3 oauth_exploit_automation.py --tenant-id $TENANT_ID --client-id $CLIENT_ID
+
+# PowerShell automation (on Windows)
+# pwsh oauth_exploit.ps1 -TenantId $TENANT_ID -ClientId $CLIENT_ID
+Task 4: Implement Defensive Measures
+Step 1: Validate OAuth Configuration
+Create a security validation script:
+
+#!/usr/bin/env python3
+"""
+OAuth Security Validator
+Students: Complete the TODO sections to validate OAuth security
+"""
+
+class OAuthSecurityValidator:
+    def validate_redirect_uris(self, registered_redirects):
+        """
+        Validate redirect URI configuration
+        
+        TODO: Implement checks for:
+        1. No wildcard redirects
+        2. HTTPS enforcement (except localhost)
+        3. No open redirects
+        4. Exact match validation
+        """
+        # TODO: Implement validation
+        pass
+    
+    def validate_scope_configuration(self, requested_scopes):
+        """
+        Validate scope configuration
+        
+        TODO: Implement checks for:
+        1. Principle of least privilege
+        2. No excessive permissions
+        3. Proper scope documentation
+        4. User consent requirements
+        """
+        # TODO: Implement validation
+        pass
+    
+    def validate_token_handling(self):
+        """
+        Validate token handling practices
+        
+        TODO: Implement checks for:
+        1. Token expiration times
+        2. Refresh token rotation
+        3. Token storage security
+        4. Token revocation mechanisms
+        """
+        # TODO: Implement validation
+        pass
+
+def main():
+    # TODO: Run security validation checks
+    # TODO: Generate security report
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Configure Azure AD Security Settings
+Document security hardening steps:
+
+# Create security checklist
+cat > security_checklist.md << EOF
+# Azure OAuth Security Checklist
+
+## Redirect URI Configuration
+- [ ] Register exact redirect URIs (no wildcards)
+- [ ] Enforce HTTPS for production redirects
+- [ ] Validate redirect URIs on server-side
+- [ ] Implement state parameter validation
+
+## Scope Management
+- [ ] Request minimum required scopes
+- [ ] Implement incremental consent
+- [ ] Document scope usage
+- [ ] Regular scope audits
+
+## Token Security
+- [ ] Use short-lived access tokens (1 hour max)
+- [ ] Implement refresh token rotation
+- [ ] Store tokens securely (encrypted)
+- [ ] Implement token revocation
+
+## Application Security
+- [ ] Enable Conditional Access policies
+- [ ] Implement Multi-Factor Authentication
+- [ ] Monitor for suspicious OAuth activity
+- [ ] Regular security assessments
+
+## Monitoring and Logging
+- [ ] Enable Azure AD sign-in logs
+- [ ] Monitor for unusual consent grants
+- [ ] Alert on suspicious redirect URIs
+- [ ] Track token usage patterns
+EOF
+Step 3: Test Security Controls
+Verify security implementations:
+
+# Test redirect URI validation
+curl -i "https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=https://evil.com&scope=openid"
+
+# Expected: Error or rejection of unauthorized redirect
+
+# Test scope restrictions
+curl -i "https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=$REDIRECT_URI&scope=Directory.ReadWrite.All"
+
+# Expected: Admin consent required or access denied
+Expected Outcomes
+After completing this lab, you should have:
+
+Successfully enumerated Azure OAuth configurations and identified misconfigurations
+Intercepted authorization codes using a local HTTP server
+Exchanged authorization codes for access tokens
+Tested stolen tokens against Microsoft Graph API
+Created automated exploitation scripts in Python
+Implemented and validated security controls
+Generated security reports and remediation recommendations
+Troubleshooting Tips
+Issue: Code interceptor not receiving callbacks
+
+Solution: Ensure redirect URI matches exactly (including port)
+Check firewall rules allow incoming connections on specified port
+Verify the authorization URL includes correct redirect_uri parameter
+Issue: Token exchange fails with invalid_grant error
+
+Solution: Authorization codes expire quickly (typically 10 minutes)
+Ensure code is exchanged immediately after capture
+Verify redirect_uri in token request matches authorization request
+Issue: Access token doesn't work with Graph API
+
+Solution: Check token has required scopes for the endpoint
+Verify token hasn't expired (check exp claim)
+Ensure proper Authorization header format: "Bearer "
+Conclusion
+This lab demonstrated how OAuth misconfigurations in Azure SSO implementations can be exploited to gain unauthorized access. You learned to enumerate OAuth endpoints, exploit redirect URI validation weaknesses, intercept authorization codes, and exchange them for access tokens. You also created automation scripts to streamline the exploitation process.
+
+Key takeaways:
+
+OAuth security depends on proper redirect URI validation
+Authorization codes must be protected during transmission
+Scope configuration should follow least privilege principle
+Defensive measures include strict validation, monitoring, and security controls
+In production environments, always implement comprehensive OAuth security controls, regularly audit configurations, and monitor for suspicious activity. Understanding these attack vectors is essential for securing cloud-based authentication systems.
+
+Remember: These techniques are for authorized security testing only. Unauthorized access to systems is illegal and unethical.
