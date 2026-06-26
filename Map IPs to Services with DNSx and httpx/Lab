@@ -1,0 +1,759 @@
+Map IPs to Services with DNSx and httpx
+Objectives
+By the end of this lab, students will be able to:
+
+Understand DNS enumeration techniques using DNSx
+Map discovered IP addresses to running web services using httpx
+Automate the IP-to-service mapping process using Python scripts
+Visualize discovered services and their relationships
+Apply cloud asset enumeration techniques for security assessment
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of DNS concepts and IP addressing
+Familiarity with Linux command line operations
+Basic knowledge of HTTP/HTTPS protocols
+Understanding of Python scripting fundamentals
+Knowledge of network reconnaissance concepts
+Lab Environment
+Al Nafi provides pre-configured Linux-based cloud machines for this lab. Simply click Start Lab to access your dedicated environment. No additional VM setup is required. All tools and dependencies are pre-installed on your machine.
+
+Task 1: Use DNSx for DNS Service Enumeration
+Subtask 1.1: Install and Verify DNSx
+First, let's ensure DNSx is properly installed and configured on your system.
+
+# Update package repositories
+sudo apt update
+
+# Install Go if not already installed
+sudo apt install golang-go -y
+
+# Install DNSx
+go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+
+# Add Go bin to PATH if not already added
+echo 'export PATH=$PATH:~/go/bin' >> ~/.bashrc
+source ~/.bashrc
+
+# Verify installation
+dnsx -version
+Subtask 1.2: Basic DNS Resolution with DNSx
+Let's start with basic DNS resolution to understand how DNSx works.
+
+# Create a working directory for this lab
+mkdir ~/lab3-dns-mapping
+cd ~/lab3-dns-mapping
+
+# Create a sample domain list
+cat > domains.txt << EOF
+google.com
+github.com
+stackoverflow.com
+cloudflare.com
+amazon.com
+microsoft.com
+EOF
+
+# Perform basic DNS resolution
+dnsx -l domains.txt -a -resp
+
+# Save results to file
+dnsx -l domains.txt -a -resp -o dns_results.txt
+Subtask 1.3: Advanced DNS Enumeration
+Now let's perform more comprehensive DNS enumeration to gather additional information.
+
+# Perform comprehensive DNS enumeration
+dnsx -l domains.txt -a -aaaa -cname -mx -ns -txt -resp -o comprehensive_dns.txt
+
+# Extract only IP addresses
+dnsx -l domains.txt -a -resp-only | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' > ip_addresses.txt
+
+# Display discovered IPs
+echo "Discovered IP addresses:"
+cat ip_addresses.txt
+Subtask 1.4: DNS Bruteforcing
+Let's perform subdomain enumeration to discover additional assets.
+
+# Create a simple subdomain wordlist
+cat > subdomains.txt << EOF
+www
+mail
+ftp
+admin
+api
+dev
+test
+staging
+blog
+shop
+support
+docs
+EOF
+
+# Perform subdomain bruteforcing for one domain
+echo "google.com" | dnsx -w subdomains.txt -a -resp -o subdomain_results.txt
+
+# Extract IPs from subdomain results
+grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' subdomain_results.txt >> ip_addresses.txt
+
+# Remove duplicates
+sort ip_addresses.txt | uniq > unique_ips.txt
+Task 2: Map Discovered IPs to Services using httpx
+Subtask 2.1: Install and Configure httpx
+Let's install httpx for HTTP service enumeration.
+
+# Install httpx
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+
+# Verify installation
+httpx -version
+Subtask 2.2: Basic HTTP Service Discovery
+Now let's probe the discovered IPs for HTTP services.
+
+# Probe IPs for HTTP services
+httpx -l unique_ips.txt -ports 80,443,8080,8443 -o http_services.txt
+
+# Probe with more detailed information
+httpx -l unique_ips.txt -ports 80,443,8080,8443,3000,5000,9000 -title -tech-detect -status-code -o detailed_services.txt
+
+# Display results
+echo "Discovered HTTP services:"
+cat detailed_services.txt
+Subtask 2.3: Advanced Service Enumeration
+Let's gather more detailed information about the discovered services.
+
+# Comprehensive service enumeration
+httpx -l unique_ips.txt -ports 80,443,8080,8443,3000,5000,9000 \
+  -title -tech-detect -status-code -content-length -server \
+  -method -websocket -pipeline -http2 -o comprehensive_services.txt
+
+# Screenshot capability (if available)
+httpx -l unique_ips.txt -screenshot -o screenshot_results.txt
+
+# Extract specific information
+echo "Services with specific technologies:"
+grep -i "nginx\|apache\|iis" comprehensive_services.txt
+Subtask 2.4: Service Categorization
+Let's categorize the discovered services based on their characteristics.
+
+# Create categorized output
+echo "=== Web Servers ===" > service_categories.txt
+grep -i "nginx\|apache\|iis" comprehensive_services.txt >> service_categories.txt
+
+echo -e "\n=== Cloud Services ===" >> service_categories.txt
+grep -i "cloudflare\|aws\|azure\|gcp" comprehensive_services.txt >> service_categories.txt
+
+echo -e "\n=== Development/API Services ===" >> service_categories.txt
+grep -E ":3000|:5000|:8080|:9000" comprehensive_services.txt >> service_categories.txt
+
+echo -e "\n=== Secure Services (HTTPS) ===" >> service_categories.txt
+grep "https://" comprehensive_services.txt >> service_categories.txt
+
+# Display categorized results
+cat service_categories.txt
+Task 3: Automate the Mapping Process and Visualize Data with Python
+Subtask 3.1: Create Python Automation Script
+Let's create a Python script to automate the entire process.
+
+#!/usr/bin/env python3
+
+import subprocess
+import json
+import csv
+import os
+from datetime import datetime
+
+class DNSServiceMapper:
+    def __init__(self, output_dir="lab3_results"):
+        self.output_dir = output_dir
+        self.create_output_directory()
+    
+    def create_output_directory(self):
+        """Create output directory if it doesn't exist"""
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+    
+    def run_dnsx_enumeration(self, domains_file):
+        """Run DNSx enumeration on provided domains"""
+        print("[+] Starting DNS enumeration with DNSx...")
+        
+        # Basic DNS resolution
+        dns_cmd = f"dnsx -l {domains_file} -a -resp -json -o {self.output_dir}/dns_results.json"
+        subprocess.run(dns_cmd, shell=True, capture_output=True)
+        
+        # Extract IPs
+        ip_extraction_cmd = f"dnsx -l {domains_file} -a -resp-only | grep -oE '([0-9]{{1,3}}\.){{3}}[0-9]{{1,3}}' > {self.output_dir}/extracted_ips.txt"
+        subprocess.run(ip_extraction_cmd, shell=True)
+        
+        print("[+] DNS enumeration completed")
+    
+    def run_httpx_enumeration(self, ips_file):
+        """Run httpx enumeration on discovered IPs"""
+        print("[+] Starting HTTP service enumeration with httpx...")
+        
+        httpx_cmd = f"httpx -l {ips_file} -ports 80,443,8080,8443,3000,5000,9000 -title -tech-detect -status-code -json -o {self.output_dir}/http_services.json"
+        subprocess.run(httpx_cmd, shell=True, capture_output=True)
+        
+        print("[+] HTTP service enumeration completed")
+    
+    def parse_results(self):
+        """Parse and combine DNS and HTTP results"""
+        print("[+] Parsing and combining results...")
+        
+        combined_results = []
+        
+        # Parse DNS results
+        dns_results = {}
+        try:
+            with open(f"{self.output_dir}/dns_results.json", 'r') as f:
+                for line in f:
+                    try:
+                        data = json.loads(line.strip())
+                        if 'host' in data and 'a' in data:
+                            dns_results[data['host']] = data['a']
+                    except json.JSONDecodeError:
+                        continue
+        except FileNotFoundError:
+            print("[-] DNS results file not found")
+        
+        # Parse HTTP results
+        try:
+            with open(f"{self.output_dir}/http_services.json", 'r') as f:
+                for line in f:
+                    try:
+                        data = json.loads(line.strip())
+                        combined_results.append({
+                            'url': data.get('url', ''),
+                            'status_code': data.get('status_code', ''),
+                            'title': data.get('title', ''),
+                            'tech': data.get('tech', []),
+                            'server': data.get('server', ''),
+                            'content_length': data.get('content_length', 0)
+                        })
+                    except json.JSONDecodeError:
+                        continue
+        except FileNotFoundError:
+            print("[-] HTTP results file not found")
+        
+        return combined_results
+    
+    def generate_csv_report(self, results):
+        """Generate CSV report from results"""
+        print("[+] Generating CSV report...")
+        
+        csv_file = f"{self.output_dir}/service_mapping_report.csv"
+        
+        with open(csv_file, 'w', newline='') as csvfile:
+            fieldnames = ['url', 'status_code', 'title', 'technologies', 'server', 'content_length']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            
+            writer.writeheader()
+            for result in results:
+                writer.writerow({
+                    'url': result['url'],
+                    'status_code': result['status_code'],
+                    'title': result['title'],
+                    'technologies': ', '.join(result['tech']) if result['tech'] else '',
+                    'server': result['server'],
+                    'content_length': result['content_length']
+                })
+        
+        print(f"[+] CSV report saved to {csv_file}")
+    
+    def generate_summary_report(self, results):
+        """Generate summary statistics"""
+        print("[+] Generating summary report...")
+        
+        total_services = len(results)
+        status_codes = {}
+        technologies = {}
+        servers = {}
+        
+        for result in results:
+            # Count status codes
+            status = str(result['status_code'])
+            status_codes[status] = status_codes.get(status, 0) + 1
+            
+            # Count technologies
+            for tech in result['tech']:
+                technologies[tech] = technologies.get(tech, 0) + 1
+            
+            # Count servers
+            server = result['server']
+            if server:
+                servers[server] = servers.get(server, 0) + 1
+        
+        # Write summary report
+        summary_file = f"{self.output_dir}/summary_report.txt"
+        with open(summary_file, 'w') as f:
+            f.write(f"DNS and HTTP Service Mapping Summary Report\n")
+            f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"{'='*50}\n\n")
+            
+            f.write(f"Total Services Discovered: {total_services}\n\n")
+            
+            f.write("Status Code Distribution:\n")
+            for status, count in sorted(status_codes.items()):
+                f.write(f"  {status}: {count}\n")
+            
+            f.write("\nTop Technologies Detected:\n")
+            for tech, count in sorted(technologies.items(), key=lambda x: x[1], reverse=True)[:10]:
+                f.write(f"  {tech}: {count}\n")
+            
+            f.write("\nTop Server Types:\n")
+            for server, count in sorted(servers.items(), key=lambda x: x[1], reverse=True)[:10]:
+                f.write(f"  {server}: {count}\n")
+        
+        print(f"[+] Summary report saved to {summary_file}")
+
+def main():
+    # Initialize mapper
+    mapper = DNSServiceMapper()
+    
+    # Create sample domains file
+    domains_file = "target_domains.txt"
+    with open(domains_file, 'w') as f:
+        f.write("google.com\ngithub.com\nstackoverflow.com\ncloudflare.com\namazon.com\nmicrosoft.com\n")
+    
+    # Run enumeration
+    mapper.run_dnsx_enumeration(domains_file)
+    mapper.run_httpx_enumeration(f"{mapper.output_dir}/extracted_ips.txt")
+    
+    # Parse and generate reports
+    results = mapper.parse_results()
+    mapper.generate_csv_report(results)
+    mapper.generate_summary_report(results)
+    
+    print(f"\n[+] All results saved to {mapper.output_dir}/ directory")
+    print("[+] Automation completed successfully!")
+
+if __name__ == "__main__":
+    main()
+Save this script as dns_service_mapper.py:
+
+cat > dns_service_mapper.py << 'EOF'
+# [Insert the Python script from above here]
+EOF
+
+chmod +x dns_service_mapper.py
+Subtask 3.2: Run the Automation Script
+Let's execute our automation script to perform the complete mapping process.
+
+# Install required Python packages
+pip3 install requests
+
+# Run the automation script
+python3 dns_service_mapper.py
+
+# Check the generated results
+ls -la lab3_results/
+Subtask 3.3: Create Data Visualization Script
+Let's create a visualization script to better understand our results.
+
+#!/usr/bin/env python3
+
+import json
+import matplotlib.pyplot as plt
+import pandas as pd
+from collections import Counter
+import seaborn as sns
+
+class ServiceVisualizer:
+    def __init__(self, results_dir="lab3_results"):
+        self.results_dir = results_dir
+        plt.style.use('default')
+    
+    def load_data(self):
+        """Load data from CSV report"""
+        try:
+            df = pd.read_csv(f"{self.results_dir}/service_mapping_report.csv")
+            return df
+        except FileNotFoundError:
+            print("[-] CSV report not found. Run the mapper script first.")
+            return None
+    
+    def create_status_code_chart(self, df):
+        """Create status code distribution chart"""
+        plt.figure(figsize=(10, 6))
+        status_counts = df['status_code'].value_counts()
+        
+        plt.subplot(1, 2, 1)
+        status_counts.plot(kind='bar', color='skyblue')
+        plt.title('HTTP Status Code Distribution')
+        plt.xlabel('Status Code')
+        plt.ylabel('Count')
+        plt.xticks(rotation=45)
+        
+        plt.subplot(1, 2, 2)
+        plt.pie(status_counts.values, labels=status_counts.index, autopct='%1.1f%%')
+        plt.title('Status Code Distribution (Pie Chart)')
+        
+        plt.tight_layout()
+        plt.savefig(f"{self.results_dir}/status_code_distribution.png", dpi=300, bbox_inches='tight')
+        plt.show()
+    
+    def create_technology_chart(self, df):
+        """Create technology distribution chart"""
+        # Extract all technologies
+        all_techs = []
+        for tech_str in df['technologies'].dropna():
+            if tech_str:
+                all_techs.extend([t.strip() for t in tech_str.split(',')])
+        
+        tech_counts = Counter(all_techs)
+        top_techs = dict(tech_counts.most_common(10))
+        
+        plt.figure(figsize=(12, 6))
+        plt.bar(top_techs.keys(), top_techs.values(), color='lightcoral')
+        plt.title('Top 10 Technologies Detected')
+        plt.xlabel('Technology')
+        plt.ylabel('Count')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.savefig(f"{self.results_dir}/technology_distribution.png", dpi=300, bbox_inches='tight')
+        plt.show()
+    
+    def create_server_chart(self, df):
+        """Create server type distribution chart"""
+        server_counts = df['server'].value_counts().head(10)
+        
+        plt.figure(figsize=(10, 6))
+        server_counts.plot(kind='barh', color='lightgreen')
+        plt.title('Top 10 Server Types')
+        plt.xlabel('Count')
+        plt.ylabel('Server Type')
+        plt.tight_layout()
+        plt.savefig(f"{self.results_dir}/server_distribution.png", dpi=300, bbox_inches='tight')
+        plt.show()
+    
+    def generate_all_visualizations(self):
+        """Generate all visualization charts"""
+        df = self.load_data()
+        if df is None:
+            return
+        
+        print("[+] Generating visualizations...")
+        
+        self.create_status_code_chart(df)
+        self.create_technology_chart(df)
+        self.create_server_chart(df)
+        
+        print(f"[+] All visualizations saved to {self.results_dir}/ directory")
+
+def main():
+    visualizer = ServiceVisualizer()
+    visualizer.generate_all_visualizations()
+
+if __name__ == "__main__":
+    main()
+Save and run the visualization script:
+
+# Install required packages
+pip3 install matplotlib pandas seaborn
+
+# Save the visualization script
+cat > service_visualizer.py << 'EOF'
+# [Insert the visualization script from above here]
+EOF
+
+chmod +x service_visualizer.py
+
+# Run the visualization script
+python3 service_visualizer.py
+Subtask 3.4: Create Interactive Dashboard
+Let's create a simple web-based dashboard to view our results interactively.
+
+#!/usr/bin/env python3
+
+import pandas as pd
+import json
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import webbrowser
+import threading
+import time
+
+class DashboardGenerator:
+    def __init__(self, results_dir="lab3_results"):
+        self.results_dir = results_dir
+    
+    def generate_html_dashboard(self):
+        """Generate HTML dashboard"""
+        try:
+            df = pd.read_csv(f"{self.results_dir}/service_mapping_report.csv")
+        except FileNotFoundError:
+            print("[-] CSV report not found. Run the mapper script first.")
+            return
+        
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DNS Service Mapping Dashboard</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        .header {{ background-color: #f0f0f0; padding: 20px; border-radius: 5px; }}
+        .section {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }}
+        table {{ width: 100%; border-collapse: collapse; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th {{ background-color: #f2f2f2; }}
+        .stats {{ display: flex; justify-content: space-around; }}
+        .stat-box {{ text-align: center; padding: 20px; background-color: #e9ecef; border-radius: 5px; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DNS Service Mapping Dashboard</h1>
+        <p>Comprehensive analysis of discovered services and their characteristics</p>
+    </div>
+    
+    <div class="section">
+        <h2>Summary Statistics</h2>
+        <div class="stats">
+            <div class="stat-box">
+                <h3>{len(df)}</h3>
+                <p>Total Services</p>
+            </div>
+            <div class="stat-box">
+                <h3>{len(df['status_code'].unique())}</h3>
+                <p>Unique Status Codes</p>
+            </div>
+            <div class="stat-box">
+                <h3>{len(df[df['status_code'] == 200])}</h3>
+                <p>Successful Responses</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Discovered Services</h2>
+        <table>
+            <tr>
+                <th>URL</th>
+                <th>Status Code</th>
+                <th>Title</th>
+                <th>Technologies</th>
+                <th>Server</th>
+            </tr>
+"""
+        
+        for _, row in df.iterrows():
+            html_content += f"""
+            <tr>
+                <td><a href="{row['url']}" target="_blank">{row['url']}</a></td>
+                <td>{row['status_code']}</td>
+                <td>{row['title'] if pd.notna(row['title']) else 'N/A'}</td>
+                <td>{row['technologies'] if pd.notna(row['technologies']) else 'N/A'}</td>
+                <td>{row['server'] if pd.notna(row['server']) else 'N/A'}</td>
+            </tr>
+"""
+        
+        html_content += """
+        </table>
+    </div>
+</body>
+</html>
+"""
+        
+        # Save HTML file
+        with open(f"{self.results_dir}/dashboard.html", 'w') as f:
+            f.write(html_content)
+        
+        print(f"[+] Dashboard generated: {self.results_dir}/dashboard.html")
+    
+    def serve_dashboard(self):
+        """Serve dashboard on local web server"""
+        import os
+        os.chdir(self.results_dir)
+        
+        server = HTTPServer(('localhost', 8000), SimpleHTTPRequestHandler)
+        print("[+] Dashboard server starting on http://localhost:8000/dashboard.html")
+        
+        # Open browser after a short delay
+        def open_browser():
+            time.sleep(2)
+            webbrowser.open('http://localhost:8000/dashboard.html')
+        
+        browser_thread = threading.Thread(target=open_browser)
+        browser_thread.start()
+        
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("\n[+] Dashboard server stopped")
+            server.shutdown()
+
+def main():
+    dashboard = DashboardGenerator()
+    dashboard.generate_html_dashboard()
+    
+    print("\nOptions:")
+    print("1. View dashboard in browser (press Enter)")
+    print("2. Skip dashboard server (type 'skip')")
+    
+    choice = input("Choice: ").strip().lower()
+    
+    if choice != 'skip':
+        dashboard.serve_dashboard()
+
+if __name__ == "__main__":
+    main()
+Save and run the dashboard generator:
+
+# Save the dashboard script
+cat > dashboard_generator.py << 'EOF'
+# [Insert the dashboard script from above here]
+EOF
+
+chmod +x dashboard_generator.py
+
+# Run the dashboard generator
+python3 dashboard_generator.py
+Verification and Testing
+Let's verify that all our tools and scripts are working correctly.
+
+# Verify all generated files
+echo "=== Generated Files ==="
+ls -la lab3_results/
+
+# Check DNS results
+echo -e "\n=== DNS Results Sample ==="
+head -5 lab3_results/dns_results.json 2>/dev/null || echo "DNS results not found"
+
+# Check HTTP results
+echo -e "\n=== HTTP Results Sample ==="
+head -5 lab3_results/http_services.json 2>/dev/null || echo "HTTP results not found"
+
+# Check CSV report
+echo -e "\n=== CSV Report Sample ==="
+head -5 lab3_results/service_mapping_report.csv 2>/dev/null || echo "CSV report not found"
+
+# Display summary
+echo -e "\n=== Summary Report ==="
+cat lab3_results/summary_report.txt 2>/dev/null || echo "Summary report not found"
+Troubleshooting Common Issues
+Issue 1: DNSx or httpx not found
+Solution:
+
+# Ensure Go is properly installed and PATH is set
+export PATH=$PATH:~/go/bin
+source ~/.bashrc
+
+# Reinstall tools if necessary
+go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
+go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+Issue 2: Python modules not found
+Solution:
+
+# Install required Python packages
+pip3 install pandas matplotlib seaborn requests
+
+# If pip3 is not available
+sudo apt install python3-pip -y
+Issue 3: No results in output files
+Solution:
+
+# Check if domains are resolvable
+nslookup google.com
+
+# Test DNSx manually
+echo "google.com" | dnsx -a -resp
+
+# Test httpx manually
+echo "https://google.com" | httpx -title
+Issue 4: Permission denied errors
+Solution:
+
+# Make scripts executable
+chmod +x *.py
+
+# Check directory permissions
+ls -la lab3_results/
+Advanced Extensions
+For students who want to explore further:
+
+Extension 1: Custom Wordlists
+# Create custom subdomain wordlist
+cat > custom_subdomains.txt << EOF
+api
+admin
+dev
+test
+staging
+prod
+www
+mail
+ftp
+ssh
+vpn
+portal
+dashboard
+EOF
+
+# Use custom wordlist
+echo "target-domain.com" | dnsx -w custom_subdomains.txt -a -resp
+Extension 2: Port Scanning Integration
+# Install nmap for port scanning
+sudo apt install nmap -y
+
+# Create port scanning script
+cat > port_scanner.py << 'EOF'
+import subprocess
+import json
+
+def scan_ports(ip_file):
+    with open(ip_file, 'r') as f:
+        ips = f.read().strip().split('\n')
+    
+    for ip in ips:
+        if ip.strip():
+            print(f"Scanning {ip}...")
+            result = subprocess.run(['nmap', '-sS', '-O', ip], 
+                                  capture_output=True, text=True)
+            print(result.stdout)
+
+if __name__ == "__main__":
+    scan_ports("lab3_results/extracted_ips.txt")
+EOF
+Extension 3: Continuous Monitoring
+# Create monitoring script
+cat > monitor_services.py << 'EOF'
+import time
+import subprocess
+from datetime import datetime
+
+def monitor_services():
+    while True:
+        print(f"[{datetime.now()}] Running service check...")
+        
+        # Run httpx check
+        subprocess.run(['httpx', '-l', 'lab3_results/extracted_ips.txt', 
+                       '-status-code', '-title', '-o', 'monitoring_results.txt'])
+        
+        print("Check completed. Waiting 300 seconds...")
+        time.sleep(300)  # Wait 5 minutes
+
+if __name__ == "__main__":
+    monitor_services()
+EOF
+Conclusion
+In this lab, you have successfully learned how to:
+
+Use DNSx for comprehensive DNS enumeration - You discovered how to resolve domains, perform subdomain bruteforcing, and extract IP addresses from DNS responses.
+
+Map IP addresses to HTTP services using httpx - You learned to probe discovered IPs for web services, detect technologies, and gather service information.
+
+Automate the entire mapping process - You created Python scripts that combine DNS and HTTP enumeration, parse results, and generate comprehensive reports.
+
+Visualize discovered data - You generated charts and dashboards to better understand the discovered services and their characteristics.
+
+Apply cloud asset enumeration techniques - You practiced essential skills for identifying and mapping cloud-based assets and services.
+
+This lab demonstrates critical skills for cloud security assessment and adversary simulation. The techniques you've learned are fundamental for:
+
+Cloud asset discovery during security assessments
+Attack surface mapping for penetration testing
+Infrastructure reconnaissance in red team exercises
+Continuous monitoring of organizational assets
+The automation scripts you created can be adapted and extended for real-world security assessments, making your reconnaissance efforts more efficient and comprehensive. These skills are essential for the Al Razzaq Certified Cloud Adversary Simulation Expert (CCASE) certification and practical cloud security work.
+
+Remember to always use these techniques responsibly and only on systems you own or have explicit permission to test. The knowledge gained here should be applied ethically to improve security postures and protect digital assets.
