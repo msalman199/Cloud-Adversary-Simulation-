@@ -1,0 +1,10 @@
+Source,Relationship,Target
+example-corp.com,resolves_to,203.0.113.10
+api.example-corp.com,resolves_to,203.0.113.11
+mail.example-corp.com,resolves_to,203.0.113.12
+admin@example-corp.com,belongs_to,example-corp.com
+support@example-corp.com,belongs_to,example-corp.com
+203.0.113.10,runs_service,HTTP
+203.0.113.10,runs_service,HTTPS
+203.0.113.11,runs_service,SSH
+203.0.113.12,runs_service,MySQL
