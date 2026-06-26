@@ -1,0 +1,561 @@
+Perform Role Assumption Abuse in AWS
+Objectives
+By the end of this lab, students will be able to:
+
+Identify misconfigured IAM roles vulnerable to privilege escalation
+Perform role assumption attacks using AWS CLI and Python
+Analyze trust policies for security weaknesses
+Implement automated role enumeration and exploitation techniques
+Apply defensive measures to prevent role assumption abuse
+Prerequisites
+Basic understanding of AWS IAM (users, roles, policies)
+Familiarity with Linux command line and JSON syntax
+Basic Python programming knowledge
+AWS CLI experience
+Lab Environment Setup
+Ready-to-Use Cloud Machines: Al Nafi provides Linux-based cloud machines with all necessary tools pre-installed. Simply click Start Lab to begin.
+
+Your lab machine includes:
+
+AWS CLI v2
+Python 3.8+ with boto3 library
+Text editors (nano, vim)
+Pre-configured AWS credentials
+Task 1: Discover and Analyze Vulnerable IAM Roles
+Step 1: Configure AWS Environment
+Set up your AWS CLI with the provided lab credentials:
+
+# Configure AWS CLI
+aws configure set aws_access_key_id YOUR_LAB_ACCESS_KEY
+aws configure set aws_secret_access_key YOUR_LAB_SECRET_KEY
+aws configure set default.region us-east-1
+aws configure set default.output json
+
+# Verify your identity
+aws sts get-caller-identity
+Step 2: Create Role Discovery Script
+Create a Python script to enumerate IAM roles and identify vulnerabilities:
+
+#!/usr/bin/env python3
+import boto3
+import json
+from botocore.exceptions import ClientError
+
+def discover_roles():
+    """
+    Discover IAM roles and analyze trust policies for vulnerabilities.
+    
+    TODO: Implement role enumeration using boto3 IAM client
+    TODO: Extract and analyze trust policies
+    TODO: Identify roles with overly permissive principals
+    TODO: Save vulnerable roles to JSON file
+    
+    Returns:
+        List of vulnerable role dictionaries
+    """
+    iam = boto3.client('iam')
+    vulnerable_roles = []
+    
+    # TODO: Use paginator to list all roles
+    # paginator = iam.get_paginator('list_roles')
+    
+    # TODO: For each role, analyze trust policy
+    # Check for: wildcards (*), root principals, missing conditions
+    
+    # TODO: Store vulnerable roles with metadata
+    
+    pass
+
+def analyze_trust_policy(trust_policy, role_name):
+    """
+    Analyze trust policy for security issues.
+    
+    Args:
+        trust_policy: AssumeRolePolicyDocument dictionary
+        role_name: Name of the role being analyzed
+    
+    TODO: Check for wildcard principals (*)
+    TODO: Check for root account access
+    TODO: Check for missing Condition statements
+    TODO: Return vulnerability score (0-10)
+    
+    Returns:
+        Boolean indicating if role is vulnerable
+    """
+    pass
+
+if __name__ == "__main__":
+    # TODO: Call discover_roles()
+    # TODO: Print summary of findings
+    # TODO: Save results to vulnerable_roles.json
+    pass
+Step 3: Analyze Role Permissions
+Create a script to examine permissions attached to discovered roles:
+
+#!/usr/bin/env python3
+import boto3
+import json
+
+def analyze_role_permissions(role_name):
+    """
+    Analyze managed and inline policies attached to a role.
+    
+    Args:
+        role_name: Name of the IAM role
+    
+    TODO: List attached managed policies
+    TODO: List inline policies
+    TODO: Check for high-privilege policies (AdministratorAccess, etc.)
+    TODO: Identify dangerous actions (iam:*, sts:AssumeRole, etc.)
+    
+    Returns:
+        List of dangerous permissions found
+    """
+    iam = boto3.client('iam')
+    
+    # TODO: Get attached policies using list_attached_role_policies
+    # TODO: Get inline policies using list_role_policies
+    # TODO: Analyze policy documents for dangerous actions
+    
+    pass
+
+def check_dangerous_actions(policy_document):
+    """
+    Check policy document for dangerous action patterns.
+    
+    Args:
+        policy_document: IAM policy document dictionary
+    
+    TODO: Define list of dangerous actions
+    TODO: Iterate through policy statements
+    TODO: Match actions against dangerous patterns
+    TODO: Print warnings for findings
+    """
+    dangerous_actions = [
+        'iam:*', 'sts:AssumeRole', 'iam:AttachRolePolicy',
+        'iam:PutRolePolicy', 'ec2:*', 's3:*'
+    ]
+    
+    # TODO: Implement action checking logic
+    pass
+
+# TODO: Load vulnerable_roles.json and analyze each role
+Step 4: Execute Discovery
+Run your discovery scripts:
+
+# Create working directory
+mkdir -p ~/aws-role-abuse-lab
+cd ~/aws-role-abuse-lab
+
+# Run role discovery
+python3 role_discovery.py
+
+# Analyze permissions
+python3 analyze_permissions.py
+
+# Review results
+cat vulnerable_roles.json
+Task 2: Exploit Role Assumption Vulnerabilities
+Step 1: Manual Role Assumption Testing
+Create a script to test role assumption:
+
+#!/usr/bin/env python3
+import boto3
+import json
+from botocore.exceptions import ClientError
+
+def test_role_assumption(role_arn, session_name="TestSession"):
+    """
+    Attempt to assume a specific IAM role.
+    
+    Args:
+        role_arn: ARN of the role to assume
+        session_name: Name for the role session
+    
+    TODO: Use STS client to call assume_role
+    TODO: Extract temporary credentials from response
+    TODO: Test credentials by calling get_caller_identity
+    TODO: Return credentials dictionary or None
+    
+    Returns:
+        Dictionary with temporary credentials or None if failed
+    """
+    sts = boto3.client('sts')
+    
+    try:
+        # TODO: Call sts.assume_role()
+        # TODO: Extract AccessKeyId, SecretAccessKey, SessionToken
+        # TODO: Create new session with assumed credentials
+        # TODO: Verify new identity
+        pass
+        
+    except ClientError as e:
+        # TODO: Handle AccessDenied and other errors
+        pass
+
+def main():
+    # TODO: Load vulnerable_roles.json
+    # TODO: Attempt to assume each role
+    # TODO: Save successful assumptions to assumed_roles.json
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Test Role Capabilities
+Create a script to test what assumed roles can do:
+
+#!/usr/bin/env python3
+import boto3
+from botocore.exceptions import ClientError
+
+def test_role_capabilities(credentials):
+    """
+    Test permissions available with assumed role credentials.
+    
+    Args:
+        credentials: Dictionary with AccessKeyId, SecretAccessKey, SessionToken
+    
+    TODO: Create boto3 session with provided credentials
+    TODO: Test IAM actions (list_users, list_roles, create_user)
+    TODO: Test EC2 actions (describe_instances, run_instances)
+    TODO: Test S3 actions (list_buckets, create_bucket)
+    TODO: Return list of successful actions
+    
+    Returns:
+        List of capabilities (e.g., ['iam:list_users', 's3:list_buckets'])
+    """
+    session = boto3.Session(
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken']
+    )
+    
+    capabilities = []
+    
+    # TODO: Test various service actions
+    # Use try/except to catch AccessDenied errors
+    # Only test read operations, avoid destructive actions
+    
+    pass
+
+# TODO: Load assumed_roles.json and test each role
+Step 3: Explore Role Chaining
+Test if assumed roles can assume other roles:
+
+#!/usr/bin/env python3
+import boto3
+
+def test_role_chaining(assumed_credentials, target_role_arn):
+    """
+    Test if an assumed role can assume another role (role chaining).
+    
+    Args:
+        assumed_credentials: Credentials from first role assumption
+        target_role_arn: ARN of role to chain to
+    
+    TODO: Create session with assumed credentials
+    TODO: Use STS to attempt assuming target role
+    TODO: Return success/failure status
+    
+    Returns:
+        Boolean indicating if chaining succeeded
+    """
+    # TODO: Implement role chaining logic
+    pass
+
+# TODO: Test chaining between discovered roles
+Task 3: Automate Role Assumption Attacks
+Step 1: Build Automation Framework
+Create a comprehensive automation framework:
+
+#!/usr/bin/env python3
+import boto3
+import json
+from datetime import datetime
+
+class RoleAbuseFramework:
+    def __init__(self):
+        self.discovered_roles = []
+        self.assumed_roles = []
+        self.attack_results = {
+            'timestamp': datetime.now().isoformat(),
+            'discovered_roles': 0,
+            'successful_assumptions': 0,
+            'failed_assumptions': 0
+        }
+    
+    def discover_all_roles(self):
+        """
+        Comprehensive role discovery with vulnerability scoring.
+        
+        TODO: Enumerate all IAM roles
+        TODO: Analyze each trust policy
+        TODO: Assign vulnerability score (0-10)
+        TODO: Store roles sorted by score
+        """
+        pass
+    
+    def analyze_trust_policy(self, trust_policy):
+        """
+        Analyze trust policy and calculate vulnerability score.
+        
+        Args:
+            trust_policy: AssumeRolePolicyDocument
+        
+        TODO: Score based on principal types
+        TODO: Add points for wildcards (+10)
+        TODO: Add points for root access (+5)
+        TODO: Add points for missing conditions (+3)
+        
+        Returns:
+            Integer vulnerability score
+        """
+        pass
+    
+    def attempt_role_assumption(self, role_info):
+        """
+        Attempt to assume role and test capabilities.
+        
+        Args:
+            role_info: Dictionary with role metadata
+        
+        TODO: Call STS assume_role
+        TODO: Test assumed role capabilities
+        TODO: Store results
+        TODO: Update attack statistics
+        
+        Returns:
+            Dictionary with assumption results or None
+        """
+        pass
+    
+    def test_role_capabilities(self, credentials):
+        """
+        Test what actions the assumed role can perform.
+        
+        Args:
+            credentials: Temporary credentials dictionary
+        
+        TODO: Test IAM, EC2, S3, and other services
+        TODO: Return list of successful actions
+        """
+        pass
+    
+    def automated_attack(self):
+        """
+        Execute full automated attack workflow.
+        
+        TODO: Discover roles
+        TODO: Sort by vulnerability score
+        TODO: Attempt assumptions in order
+        TODO: Test capabilities for each success
+        TODO: Identify privilege escalations
+        """
+        pass
+    
+    def generate_report(self):
+        """
+        Generate comprehensive attack report.
+        
+        TODO: Compile all results
+        TODO: Save to JSON file
+        TODO: Print summary statistics
+        TODO: Highlight privilege escalations
+        """
+        pass
+
+def main():
+    framework = RoleAbuseFramework()
+    
+    # TODO: Run automated attack
+    # TODO: Generate report
+    # TODO: Handle interruptions gracefully
+    
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Create AWS CLI Automation
+Build a shell script for CLI-based automation:
+
+#!/bin/bash
+
+# AWS CLI Role Assumption Automation
+# TODO: Implement the following functions
+
+discover_roles() {
+    # TODO: Use aws iam list-roles to get all roles
+    # TODO: Save to all_roles.json
+    # TODO: Extract role names and ARNs
+    # TODO: Analyze trust policies for vulnerabilities
+    echo "[+] Discovering IAM roles..."
+}
+
+attempt_role_assumption() {
+    local role_arn=$1
+    local role_name=$2
+    
+    # TODO: Use aws sts assume-role
+    # TODO: Extract credentials from response
+    # TODO: Test capabilities with assumed credentials
+    # TODO: Save successful assumptions
+    echo "[+] Attempting to assume: $role_name"
+}
+
+test_capabilities() {
+    local access_key=$1
+    local secret_key=$2
+    local session_token=$3
+    
+    # TODO: Export temporary credentials
+    # TODO: Test various AWS CLI commands
+    # TODO: Log successful actions
+    echo "[+] Testing capabilities..."
+}
+
+# TODO: Main execution flow
+# discover_roles
+# Loop through roles and attempt assumptions
+# Generate summary report
+Step 3: Execute Automated Attack
+Run your automation framework:
+
+# Execute Python framework
+python3 role_abuse_framework.py
+
+# Review generated report
+cat role_abuse_report_*.json
+
+# Execute CLI automation
+chmod +x aws_cli_role_abuse.sh
+./aws_cli_role_abuse.sh
+Task 4: Implement Defensive Measures
+Step 1: Audit Trust Policies
+Create a script to audit and fix trust policies:
+
+#!/usr/bin/env python3
+import boto3
+
+def audit_trust_policy(role_name):
+    """
+    Audit role trust policy for security issues.
+    
+    TODO: Get current trust policy
+    TODO: Check for wildcards, root access, missing conditions
+    TODO: Generate recommendations
+    TODO: Optionally fix issues (with confirmation)
+    
+    Returns:
+        List of security findings and recommendations
+    """
+    pass
+
+def generate_secure_trust_policy(role_name, trusted_principals):
+    """
+    Generate a secure trust policy template.
+    
+    Args:
+        role_name: Name of the role
+        trusted_principals: List of specific ARNs that should be trusted
+    
+    TODO: Create policy with specific principals
+    TODO: Add ExternalId condition
+    TODO: Add MFA condition if appropriate
+    TODO: Return policy document
+    """
+    secure_policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": trusted_principals
+                },
+                "Action": "sts:AssumeRole",
+                "Condition": {
+                    # TODO: Add appropriate conditions
+                }
+            }
+        ]
+    }
+    return secure_policy
+
+# TODO: Audit all roles and generate remediation report
+Step 2: Implement Monitoring
+Create CloudWatch alerts for suspicious role assumptions:
+
+#!/usr/bin/env python3
+import boto3
+
+def setup_role_assumption_monitoring():
+    """
+    Configure CloudWatch monitoring for role assumptions.
+    
+    TODO: Create CloudWatch Logs metric filter
+    TODO: Create SNS topic for alerts
+    TODO: Create CloudWatch alarm
+    TODO: Configure alert thresholds
+    """
+    # TODO: Use CloudWatch Logs client to create metric filter
+    # Filter pattern: { $.eventName = "AssumeRole" }
+    
+    # TODO: Create alarm for unusual assumption patterns
+    pass
+
+# TODO: Implement monitoring setup
+Expected Outcomes
+After completing this lab, you should have:
+
+Discovered vulnerable IAM roles in your AWS environment
+Successfully assumed roles with weak trust policies
+Identified privilege escalation paths through role chaining
+Created automated tools for role enumeration and exploitation
+Implemented defensive measures and monitoring
+Key Files Generated:
+
+vulnerable_roles.json - List of vulnerable roles
+assumed_roles.json - Successfully assumed roles
+role_abuse_report_*.json - Comprehensive attack report
+Automation scripts for discovery and exploitation
+Troubleshooting Tips
+Issue: "AccessDenied" when listing roles
+
+Verify your AWS credentials are configured correctly
+Check that your user/role has iam:ListRoles permission
+Ensure you're using the correct AWS region
+Issue: Cannot assume any roles
+
+Verify the trust policy allows your principal
+Check for required Condition statements (ExternalId, MFA)
+Ensure role ARN format is correct
+Issue: Scripts fail with "NoCredentialsError"
+
+Run aws configure list to verify credentials
+Check environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+Ensure boto3 can find credentials in ~/.aws/credentials
+Issue: Rate limiting errors
+
+Add delays between API calls (time.sleep(1))
+Implement exponential backoff for retries
+Reduce parallelization in automation scripts
+Conclusion
+This lab demonstrated how misconfigured IAM role trust policies can be exploited for privilege escalation in AWS environments. You learned to:
+
+Systematically discover and analyze IAM roles for vulnerabilities
+Exploit weak trust policies through role assumption
+Automate the discovery and exploitation process
+Implement defensive measures including policy auditing and monitoring
+Key Takeaways:
+
+Always use specific principals in trust policies, never wildcards
+Implement Condition statements (ExternalId, MFA) for additional security
+Regularly audit role trust policies for misconfigurations
+Monitor CloudTrail logs for suspicious AssumeRole activity
+Apply principle of least privilege to all IAM roles
+Next Steps:
+
+Practice identifying role assumption vulnerabilities in your own AWS accounts
+Implement automated trust policy auditing in your organization
+Configure CloudWatch alerts for unusual role assumption patterns
+Review AWS Security Best Practices for IAM roles
+Remember: These techniques should only be used in authorized environments for security testing and educational purposes.
