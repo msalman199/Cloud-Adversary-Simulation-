@@ -1,0 +1,24 @@
+Cloud Asset Analysis Report
+===========================
+
+Graph Summary:
+- Total Entities: [Count your entities]
+- Domain Names: [List domains found]
+- IP Addresses: [List IPs discovered]
+- Email Addresses: [List emails found]
+- Services Identified: [List services]
+
+Key Relationships Discovered:
+- DNS Resolution mappings
+- Email-to-domain associations
+- Service-to-server mappings
+
+Security Observations:
+- Exposed services and ports
+- Domain-IP relationships
+- Potential attack vectors
+
+Recommendations:
+- Services requiring security review
+- Assets needing additional monitoring
+- Network segmentation opportunities
