@@ -1,0 +1,17 @@
+{
+  "info": {"name": "API Collection"},
+  "item": [{
+    "name": "Get Users",
+    "request": {
+      "header": [
+        {"key": "X-API-Key", "value": "sk-prod-abc123def456ghi789"},
+        {"key": "Authorization", "value": "Bearer prod-token-xyz789"}
+      ],
+      "url": "https://api.example.com/users"
+    }
+  }],
+  "variable": [
+    {"key": "aws_key", "value": "AKIAIOSFODNN7EXAMPLE"},
+    {"key": "stripe_key", "value": "sk_live_51234567890abcdef"}
+  ]
+}
