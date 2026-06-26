@@ -1,0 +1,543 @@
+Visualize Asset Graphs Using Maltego CE
+Objectives
+By the end of this lab, students will be able to:
+
+Install and configure Maltego Community Edition (CE) on Linux
+Import cloud asset data into Maltego for visualization
+Create and analyze relationship graphs between different assets
+Understand the fundamentals of graph-based asset visualization
+Use Maltego's transform capabilities to discover asset relationships
+Export and document findings from asset graph analysis
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of Linux command line operations
+Familiarity with cloud computing concepts and terminology
+Knowledge of network fundamentals (IP addresses, domains, services)
+Understanding of cybersecurity concepts related to asset discovery
+Basic familiarity with data visualization concepts
+Lab Environment
+Al Nafi provides Linux-based cloud machines for this lab. Simply click Start Lab to access your pre-configured environment. No need to build your own virtual machine or install additional operating systems.
+
+Your lab machine includes:
+
+Ubuntu 22.04 LTS
+Internet connectivity
+Required dependencies pre-installed
+Sample asset data files
+Task 1: Install and Configure Maltego CE
+Subtask 1.1: Download and Install Maltego CE
+First, we need to download and install Maltego Community Edition on our Linux machine.
+
+Open a terminal window by pressing Ctrl + Alt + T
+
+Update the system package list:
+
+sudo apt update && sudo apt upgrade -y
+Install Java Runtime Environment (required for Maltego):
+sudo apt install default-jre -y
+Verify Java installation:
+java -version
+Download Maltego CE from the official website:
+cd ~/Downloads
+wget https://maltego-downloads.s3.us-east-2.amazonaws.com/linux/Maltego.v4.5.0.deb
+Install Maltego using dpkg:
+sudo dpkg -i Maltego.v4.5.0.deb
+If there are dependency issues, fix them:
+sudo apt-get install -f
+Subtask 1.2: Initial Maltego Setup
+Launch Maltego from the applications menu or run:
+maltego
+When Maltego opens, you'll see the welcome screen. Click Register to create a free account.
+
+Fill in the registration form with your details and verify your email address.
+
+After email verification, log in to Maltego with your credentials.
+
+Select Maltego CE (Free) when prompted for the product type.
+
+Complete the initial setup wizard by accepting the terms and conditions.
+
+Task 2: Prepare Sample Asset Data
+Subtask 2.1: Create Sample Asset Data Files
+We'll create sample cloud asset data that represents a typical cloud infrastructure.
+
+Create a working directory for our lab:
+mkdir ~/maltego_lab
+cd ~/maltego_lab
+Create a sample domains file:
+cat > domains.txt << EOF
+example-corp.com
+api.example-corp.com
+mail.example-corp.com
+cdn.example-corp.com
+admin.example-corp.com
+dev.example-corp.com
+staging.example-corp.com
+EOF
+Create a sample IP addresses file:
+cat > ip_addresses.txt << EOF
+203.0.113.10
+203.0.113.11
+203.0.113.12
+198.51.100.5
+198.51.100.6
+192.0.2.100
+192.0.2.101
+EOF
+Create a sample services file:
+cat > services.txt << EOF
+HTTP,80,203.0.113.10
+HTTPS,443,203.0.113.10
+SSH,22,203.0.113.11
+MySQL,3306,203.0.113.12
+Redis,6379,198.51.100.5
+MongoDB,27017,198.51.100.6
+Elasticsearch,9200,192.0.2.100
+EOF
+Create an email addresses file:
+cat > emails.txt << EOF
+admin@example-corp.com
+support@example-corp.com
+security@example-corp.com
+dev@example-corp.com
+info@example-corp.com
+EOF
+Subtask 2.2: Create Asset Relationship Data
+Create a relationships file that shows connections between assets:
+cat > relationships.csv << EOF
+Source,Relationship,Target
+example-corp.com,resolves_to,203.0.113.10
+api.example-corp.com,resolves_to,203.0.113.11
+mail.example-corp.com,resolves_to,203.0.113.12
+admin@example-corp.com,belongs_to,example-corp.com
+support@example-corp.com,belongs_to,example-corp.com
+203.0.113.10,runs_service,HTTP
+203.0.113.10,runs_service,HTTPS
+203.0.113.11,runs_service,SSH
+203.0.113.12,runs_service,MySQL
+EOF
+Task 3: Import Asset Data into Maltego
+Subtask 3.1: Create a New Maltego Graph
+In Maltego, click New Graph or press Ctrl + N
+
+You'll see an empty graph workspace with a palette of entities on the left side.
+
+Save your graph with a meaningful name:
+
+Press Ctrl + S
+Name it Cloud_Asset_Analysis
+Click Save
+Subtask 3.2: Add Domain Entities
+From the Entity Palette on the left, locate the Domain entity under Infrastructure.
+
+Drag and drop a Domain entity onto the graph canvas.
+
+Double-click the domain entity to edit its properties.
+
+Change the domain name to example-corp.com
+
+Repeat this process to add all domains from our domains.txt file:
+
+example-corp.com
+api.example-corp.com
+mail.example-corp.com
+cdn.example-corp.com
+admin.example-corp.com
+Subtask 3.3: Add IP Address Entities
+From the Entity Palette, find the IPv4 Address entity under Infrastructure.
+
+Drag and drop IPv4 Address entities onto the canvas.
+
+Edit each entity to match the IP addresses from our ip_addresses.txt file:
+
+203.0.113.10
+203.0.113.11
+203.0.113.12
+198.51.100.5
+Subtask 3.4: Add Email Entities
+Locate the Email Address entity in the palette under Personal.
+
+Add email address entities for:
+
+admin@example-corp.com
+support@example-corp.com
+security@example-corp.com
+Task 4: Visualize Relationships Between Assets
+Subtask 4.1: Create Manual Links
+To create a relationship between two entities, right-click on the source entity.
+
+Select Links > Add Link from the context menu.
+
+Click on the target entity to create the connection.
+
+Create the following relationships:
+
+Link example-corp.com to 203.0.113.10 (DNS resolution)
+Link api.example-corp.com to 203.0.113.11
+Link mail.example-corp.com to 203.0.113.12
+Link admin@example-corp.com to example-corp.com
+Link support@example-corp.com to example-corp.com
+Subtask 4.2: Customize Link Properties
+Right-click on any link between entities.
+
+Select Properties from the context menu.
+
+In the properties dialog:
+
+Change the Link Label to describe the relationship (e.g., "resolves to", "belongs to")
+Modify the Link Color to categorize different types of relationships
+Adjust Link Thickness to show relationship strength
+Apply different colors for different relationship types:
+
+Blue for DNS resolution relationships
+Green for ownership relationships
+Red for service relationships
+Subtask 4.3: Organize Graph Layout
+Use Maltego's layout algorithms to organize your graph:
+
+Click Layout in the top menu
+Try different layouts like Hierarchical, Circular, or Organic
+For better visualization, use the Hierarchical layout:
+
+Select all entities by pressing Ctrl + A
+Click Layout > Hierarchical
+Adjust the layout parameters if needed
+Manually fine-tune the positioning:
+
+Drag entities to better positions
+Group related entities together
+Ensure links don't overlap unnecessarily
+Task 5: Use Transforms for Asset Discovery
+Subtask 5.1: DNS Resolution Transforms
+Right-click on the example-corp.com domain entity.
+
+Navigate to Run Transform > DNS > To IP Address [DNS]
+
+Maltego will attempt to resolve the domain to its IP address.
+
+If successful, new IP address entities will be added to the graph with automatic links.
+
+Repeat this process for other domain entities to discover their IP addresses.
+
+Subtask 5.2: Reverse DNS Transforms
+Right-click on an IP address entity (e.g., 203.0.113.10).
+
+Select Run Transform > DNS > To Domain [DNS]
+
+This will attempt to find domain names that resolve to this IP address.
+
+New domain entities will be added if reverse DNS records exist.
+
+Subtask 5.3: Email Domain Transforms
+Right-click on an email address entity.
+
+Select Run Transform > Email > To Domain
+
+This will extract the domain portion of the email address and create a domain entity.
+
+A link will be created showing the relationship between the email and domain.
+
+Task 6: Advanced Graph Analysis
+Subtask 6.1: Add Service Information
+From the Entity Palette, find Service entities under Infrastructure.
+
+Add service entities for common cloud services:
+
+HTTP (Port 80)
+HTTPS (Port 443)
+SSH (Port 22)
+MySQL (Port 3306)
+Link these services to their respective IP addresses based on our services.txt data.
+
+Subtask 6.2: Create Entity Groups
+Select multiple related entities by holding Ctrl and clicking each entity.
+
+Right-click on the selection and choose Group > Create Group
+
+Name the group appropriately (e.g., "Web Services", "Database Servers", "Email Infrastructure").
+
+Groups help organize complex graphs and make them easier to understand.
+
+Subtask 6.3: Apply Filters and Views
+Use the View menu to apply different visualization options:
+
+Entity Labels: Show/hide entity names
+Link Labels: Display relationship descriptions
+Entity Images: Use icons instead of text
+Apply filters to focus on specific types of entities:
+
+Click View > Filters
+Select entity types to show or hide
+This helps reduce visual complexity in large graphs
+Task 7: Export and Document Findings
+Subtask 7.1: Export Graph Images
+To export your graph as an image:
+Click File > Export > Export Graph to Image
+Choose PNG or JPEG format
+Select high resolution for better quality
+Save as cloud_asset_graph.png
+Subtask 7.2: Export Graph Data
+Export the graph data for further analysis:
+Click File > Export > Export to GraphML
+Save as cloud_assets.graphml
+This format can be imported into other graph analysis tools
+Subtask 7.3: Generate Reports
+Create a summary report of your findings:
+cat > asset_analysis_report.txt << EOF
+Cloud Asset Analysis Report
+===========================
+
+Graph Summary:
+- Total Entities: [Count your entities]
+- Domain Names: [List domains found]
+- IP Addresses: [List IPs discovered]
+- Email Addresses: [List emails found]
+- Services Identified: [List services]
+
+Key Relationships Discovered:
+- DNS Resolution mappings
+- Email-to-domain associations
+- Service-to-server mappings
+
+Security Observations:
+- Exposed services and ports
+- Domain-IP relationships
+- Potential attack vectors
+
+Recommendations:
+- Services requiring security review
+- Assets needing additional monitoring
+- Network segmentation opportunities
+EOF
+Task 8: Automate Basic Graph Operations
+Subtask 8.1: Create a Simple Python Script
+While Maltego CE has limited API access, we can create a script to prepare data for import:
+
+Install Python dependencies:
+sudo apt install python3-pip -y
+pip3 install pandas networkx matplotlib
+Create a Python script for data preparation:
+cat > prepare_maltego_data.py << 'EOF'
+#!/usr/bin/env python3
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def create_asset_graph():
+    """Create a network graph from asset data"""
+    
+    # Create a new graph
+    G = nx.Graph()
+    
+    # Read our relationship data
+    try:
+        relationships = pd.read_csv('relationships.csv')
+        
+        # Add edges to the graph
+        for _, row in relationships.iterrows():
+            G.add_edge(row['Source'], row['Target'], 
+                      relationship=row['Relationship'])
+        
+        print(f"Graph created with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges")
+        
+        # Basic graph analysis
+        print("\nGraph Analysis:")
+        print(f"- Density: {nx.density(G):.3f}")
+        print(f"- Connected Components: {nx.number_connected_components(G)}")
+        
+        # Find central nodes
+        centrality = nx.degree_centrality(G)
+        most_central = max(centrality, key=centrality.get)
+        print(f"- Most connected asset: {most_central}")
+        
+        # Visualize the graph
+        plt.figure(figsize=(12, 8))
+        pos = nx.spring_layout(G, k=1, iterations=50)
+        
+        nx.draw(G, pos, with_labels=True, node_color='lightblue', 
+                node_size=1500, font_size=8, font_weight='bold')
+        
+        plt.title("Cloud Asset Relationship Graph")
+        plt.savefig("asset_graph_python.png", dpi=300, bbox_inches='tight')
+        print("\nGraph visualization saved as 'asset_graph_python.png'")
+        
+        return G
+        
+    except FileNotFoundError:
+        print("Error: relationships.csv file not found")
+        return None
+
+def export_for_maltego(graph):
+    """Export graph data in a format suitable for Maltego import"""
+    
+    if graph is None:
+        return
+    
+    # Create nodes list
+    nodes_data = []
+    for node in graph.nodes():
+        # Determine entity type based on node characteristics
+        if '@' in node:
+            entity_type = "Email"
+        elif '.' in node and not node.replace('.', '').isdigit():
+            entity_type = "Domain"
+        elif node.replace('.', '').isdigit():
+            entity_type = "IPv4"
+        else:
+            entity_type = "Phrase"
+        
+        nodes_data.append({
+            'Entity': node,
+            'Type': entity_type
+        })
+    
+    # Save nodes data
+    nodes_df = pd.DataFrame(nodes_data)
+    nodes_df.to_csv('maltego_entities.csv', index=False)
+    
+    # Create edges list
+    edges_data = []
+    for edge in graph.edges(data=True):
+        edges_data.append({
+            'Source': edge[0],
+            'Target': edge[1],
+            'Relationship': edge[2].get('relationship', 'connected_to')
+        })
+    
+    # Save edges data
+    edges_df = pd.DataFrame(edges_data)
+    edges_df.to_csv('maltego_relationships.csv', index=False)
+    
+    print("Data exported for Maltego import:")
+    print("- maltego_entities.csv")
+    print("- maltego_relationships.csv")
+
+if __name__ == "__main__":
+    print("Cloud Asset Graph Analysis Tool")
+    print("=" * 40)
+    
+    # Create and analyze the graph
+    asset_graph = create_asset_graph()
+    
+    # Export data for Maltego
+    export_for_maltego(asset_graph)
+    
+    print("\nAnalysis complete!")
+EOF
+Make the script executable and run it:
+chmod +x prepare_maltego_data.py
+python3 prepare_maltego_data.py
+Subtask 8.2: Analyze Script Output
+Review the generated files:
+ls -la *.csv *.png
+Examine the analysis results:
+cat maltego_entities.csv
+echo "---"
+cat maltego_relationships.csv
+View the Python-generated graph visualization:
+xdg-open asset_graph_python.png
+Task 9: Advanced Maltego Features
+Subtask 9.1: Create Custom Entity Types
+In Maltego, go to Manage > Manage Entities
+
+Click New to create a custom entity type
+
+Create a Cloud Service entity:
+
+Name: CloudService
+Display Name: Cloud Service
+Description: Represents a cloud-based service
+Category: Infrastructure
+Add custom properties:
+
+Service Type (AWS, Azure, GCP)
+Region
+Cost Center
+Subtask 9.2: Import CSV Data
+In Maltego, go to Import > Import from CSV
+
+Select the maltego_entities.csv file we created
+
+Map the CSV columns to Maltego entity properties:
+
+Entity column → Entity Value
+Type column → Entity Type
+Click Import to add all entities to your graph
+
+Repeat the process for maltego_relationships.csv to import relationships
+
+Subtask 9.3: Save and Share Your Work
+Save your complete graph:
+
+Press Ctrl + S
+Choose Save As and name it Complete_Asset_Analysis
+Create a Maltego export package:
+
+Go to File > Export > Export to Maltego Graph File (.mtgx)
+This creates a portable file that can be shared with other Maltego users
+Troubleshooting Common Issues
+Issue 1: Maltego Installation Problems
+If Maltego fails to install:
+
+# Remove any partial installation
+sudo apt remove maltego
+sudo apt autoremove
+
+# Install required dependencies
+sudo apt install default-jdk libxss1 libgconf-2-4 libxtst6 libxrandr2 libasound2 libpangocairo-1.0-0 libatk1.0-0 libcairo-gobject2 libgtk-3-0 libgdk-pixbuf2.0-0
+
+# Try installing again
+sudo dpkg -i Maltego.v4.5.0.deb
+sudo apt-get install -f
+Issue 2: Java Version Conflicts
+If you encounter Java-related errors:
+
+# Check Java version
+java -version
+
+# Install OpenJDK 11 if needed
+sudo apt install openjdk-11-jre
+
+# Set Java alternatives
+sudo update-alternatives --config java
+Issue 3: Transform Failures
+If transforms don't work:
+
+Check your internet connection
+Verify that you're using Maltego CE (some transforms require paid versions)
+Try using manual entity creation instead of automated transforms
+Issue 4: Graph Performance Issues
+For large graphs:
+
+Use entity grouping to reduce visual complexity
+Apply filters to show only relevant entities
+Consider breaking large graphs into smaller, focused views
+Conclusion
+In this lab, you have successfully:
+
+Installed and configured Maltego CE on a Linux system, providing you with a powerful graph visualization platform
+Created and imported asset data representing a typical cloud infrastructure with domains, IP addresses, services, and email addresses
+Visualized complex relationships between different types of assets using Maltego's graph interface
+Used transforms to automatically discover additional asset relationships and connections
+Applied advanced graph analysis techniques including entity grouping, filtering, and layout optimization
+Automated data preparation using Python scripts to streamline the analysis process
+Exported findings in multiple formats for reporting and further analysis
+Why This Matters:
+
+Asset visualization is crucial in cybersecurity and cloud management because it helps security professionals:
+
+Understand attack surfaces by visualizing how different assets connect and interact
+Identify critical infrastructure components that require additional security measures
+Discover hidden relationships between assets that might not be obvious in traditional lists or tables
+Plan incident response by understanding asset dependencies and potential impact chains
+Communicate complex infrastructure to stakeholders through clear visual representations
+The skills you've developed in this lab are directly applicable to:
+
+Cloud security assessments where you need to map and analyze cloud infrastructure
+Threat hunting activities that require understanding asset relationships
+Compliance auditing where asset inventory and relationships must be documented
+Risk assessment processes that depend on understanding asset interconnections
+Maltego's graph-based approach provides a unique perspective on asset analysis that complements traditional security tools and methodologies. By mastering these visualization techniques, you're better equipped to identify security gaps, optimize infrastructure, and communicate findings effectively to both technical and non-technical audiences.
+
+The combination of manual graph creation and automated data preparation gives you flexibility to handle both small-scale analyses and large enterprise environments, making these skills valuable across different organizational contexts and security scenarios.
