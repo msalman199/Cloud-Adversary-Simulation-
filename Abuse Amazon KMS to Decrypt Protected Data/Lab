@@ -1,0 +1,505 @@
+Abuse Amazon KMS to Decrypt Protected Data
+Objectives
+By the end of this lab, students will be able to:
+
+Identify common Amazon KMS misconfigurations and security vulnerabilities
+Analyze KMS key policies for overly permissive access controls
+Develop Python scripts to interact with KMS using boto3
+Detect sensitive information in decrypted data using pattern matching
+Implement security best practices for KMS key management
+Prerequisites
+Basic understanding of AWS IAM and encryption concepts
+Python programming fundamentals
+Familiarity with JSON and AWS policy structure
+Linux command line experience
+Lab Environment
+Your cloud machine includes:
+
+AWS CLI v2 and Python 3.8+
+boto3 library pre-installed
+Sample encrypted data files
+Mock AWS credentials for simulation
+Text editors (nano, vim)
+All tools are pre-configured. Click Start Lab to begin.
+
+Task 1: Analyze KMS Key Policy Vulnerabilities
+Step 1: Explore the Lab Directory
+Navigate to the lab workspace and examine available files:
+
+cd /home/student/kms-lab
+ls -la
+Expected files:
+
+encrypted_data.txt - Sample encrypted data
+vulnerable_policy.json - Misconfigured KMS policy
+kms_keys.json - Available KMS key information
+Step 2: Review the Vulnerable Policy
+Examine the KMS key policy:
+
+cat vulnerable_policy.json
+Key vulnerabilities to identify:
+
+Wildcard principals ("Principal": "*")
+Overly broad actions (kms:*, kms:Decrypt)
+Missing condition statements
+Lack of IP or service restrictions
+Step 3: Create a Policy Analyzer
+Create policy_analyzer.py to detect misconfigurations:
+
+#!/usr/bin/env python3
+import json
+
+def analyze_kms_policy(policy_file):
+    """
+    Analyze KMS policy for security vulnerabilities.
+    
+    Args:
+        policy_file: Path to the policy JSON file
+    
+    Returns:
+        List of vulnerability descriptions
+    """
+    vulnerabilities = []
+    
+    # TODO: Load the policy JSON file
+    # TODO: Iterate through policy statements
+    # TODO: Check for wildcard principals
+    # TODO: Check for overly broad actions (kms:*, kms:Decrypt)
+    # TODO: Check for missing condition statements
+    # TODO: Return list of vulnerabilities
+    
+    pass
+
+def main():
+    vulns = analyze_kms_policy('vulnerable_policy.json')
+    
+    print("KMS Policy Vulnerability Analysis")
+    print("=" * 40)
+    
+    # TODO: Display each vulnerability with numbering
+    # TODO: Print total count of vulnerabilities
+    
+    pass
+
+if __name__ == "__main__":
+    main()
+Run the analyzer:
+
+python3 policy_analyzer.py
+Step 4: Document Findings
+Create a findings document:
+
+nano policy_findings.txt
+Document each vulnerability with:
+
+Vulnerability type
+Severity level (CRITICAL, HIGH, MEDIUM, LOW)
+Affected policy statement
+Potential impact
+Remediation recommendation
+Task 2: Develop KMS Decryption Tools
+Step 1: Configure Mock AWS Credentials
+Set up AWS configuration for lab simulation:
+
+mkdir -p ~/.aws
+nano ~/.aws/credentials
+Add mock credentials:
+
+[default]
+aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+region = us-east-1
+Create config file:
+
+nano ~/.aws/config
+[default]
+region = us-east-1
+output = json
+Step 2: Build the KMS Decryption Tool
+Create decrypt_tool.py:
+
+#!/usr/bin/env python3
+import boto3
+import base64
+import sys
+from botocore.exceptions import ClientError
+
+class KMSDecryptor:
+    def __init__(self, region='us-east-1'):
+        """Initialize KMS client for specified region."""
+        # TODO: Create boto3 KMS client
+        # TODO: Store region information
+        pass
+    
+    def list_keys(self):
+        """
+        List all available KMS keys in the account.
+        
+        Returns:
+            List of key dictionaries
+        """
+        # TODO: Call kms_client.list_keys()
+        # TODO: For each key, call describe_key() to get details
+        # TODO: Print key ID, description, and state
+        # TODO: Return list of keys
+        pass
+    
+    def decrypt_data(self, encrypted_data, key_id=None):
+        """
+        Decrypt data using KMS.
+        
+        Args:
+            encrypted_data: Base64 encoded encrypted data
+            key_id: Optional specific key ID to use
+        
+        Returns:
+            Tuple of (decrypted_data, key_id_used)
+        """
+        # TODO: Decode base64 encrypted data
+        # TODO: Call kms_client.decrypt() with CiphertextBlob
+        # TODO: Handle ClientError exceptions (AccessDenied, InvalidCiphertext)
+        # TODO: Return decrypted plaintext and key ID used
+        pass
+    
+    def brute_force_decrypt(self, encrypted_data, key_list):
+        """
+        Attempt decryption with multiple keys.
+        
+        Args:
+            encrypted_data: Encrypted data to decrypt
+            key_list: List of keys to try
+        
+        Returns:
+            Tuple of (decrypted_data, successful_key_id)
+        """
+        # TODO: Iterate through each key in key_list
+        # TODO: Attempt decrypt_data() with each key
+        # TODO: Return on first successful decryption
+        # TODO: Return None if all attempts fail
+        pass
+    
+    def analyze_key_permissions(self, key_id):
+        """
+        Retrieve and analyze key policy.
+        
+        Args:
+            key_id: KMS key ID to analyze
+        
+        Returns:
+            Policy dictionary
+        """
+        # TODO: Call get_key_policy() for the key
+        # TODO: Parse JSON policy
+        # TODO: Display each statement with Effect, Principal, Action
+        # TODO: Highlight missing conditions
+        pass
+
+def main():
+    print("KMS Decryption Tool")
+    print("=" * 40)
+    
+    # TODO: Initialize KMSDecryptor
+    # TODO: List available keys
+    # TODO: Read encrypted_data.txt
+    # TODO: Attempt decryption (direct or brute force)
+    # TODO: Display decrypted content
+    # TODO: Analyze successful key permissions
+    
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3: Create Sample Encrypted Data
+Generate test data with create_sample_data.py:
+
+#!/usr/bin/env python3
+import base64
+import json
+
+def create_sample_encrypted_data():
+    """Generate sample encrypted data for testing."""
+    
+    sensitive_data = {
+        "database_password": "MySecretDBPassword123!",
+        "api_key": "sk-1234567890abcdef",
+        "customer_data": {
+            "name": "John Doe",
+            "ssn": "123-45-6789",
+            "credit_card": "4532-1234-5678-9012"
+        }
+    }
+    
+    # TODO: Convert dictionary to JSON string
+    # TODO: Encode as base64
+    # TODO: Write to encrypted_data.txt
+    # TODO: Print confirmation message
+    
+    pass
+
+if __name__ == "__main__":
+    create_sample_encrypted_data()
+Execute the scripts:
+
+python3 create_sample_data.py
+python3 decrypt_tool.py
+Task 3: Analyze Decrypted Data for Sensitive Information
+Step 1: Build a Sensitive Data Analyzer
+Create data_analyzer.py:
+
+#!/usr/bin/env python3
+import re
+import json
+import base64
+
+class SensitiveDataAnalyzer:
+    def __init__(self):
+        """Initialize analyzer with regex patterns for sensitive data."""
+        self.patterns = {
+            'ssn': r'\b\d{3}-\d{2}-\d{4}\b',
+            'credit_card': r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b',
+            'email': r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+            'password': r'(?i)(password|pwd|pass)\s*[:=]\s*["\']?([^"\'\s]+)["\']?',
+            'api_key': r'\b[A-Za-z0-9]{32,}\b',
+            'aws_key': r'\bAKIA[0-9A-Z]{16}\b'
+        }
+        
+        self.severity_levels = {
+            'ssn': 'HIGH',
+            'credit_card': 'HIGH',
+            'password': 'HIGH',
+            'aws_key': 'CRITICAL',
+            'api_key': 'MEDIUM',
+            'email': 'LOW'
+        }
+    
+    def analyze_text(self, text):
+        """
+        Scan text for sensitive data patterns.
+        
+        Args:
+            text: String to analyze
+        
+        Returns:
+            Dictionary of findings by type
+        """
+        # TODO: Iterate through self.patterns
+        # TODO: Use re.findall() to find matches
+        # TODO: Store matches with count and severity
+        # TODO: Return findings dictionary
+        pass
+    
+    def analyze_json(self, json_data):
+        """
+        Analyze JSON data for sensitive information.
+        
+        Args:
+            json_data: JSON string to analyze
+        
+        Returns:
+            Dictionary of findings
+        """
+        # TODO: Parse JSON string
+        # TODO: Recursively traverse JSON structure
+        # TODO: Check key names for sensitive keywords
+        # TODO: Analyze string values with analyze_text()
+        # TODO: Return combined findings
+        pass
+    
+    def generate_report(self, findings):
+        """
+        Create formatted report of findings.
+        
+        Args:
+            findings: Dictionary of detected sensitive data
+        
+        Returns:
+            Formatted report string
+        """
+        # TODO: Group findings by severity level
+        # TODO: Format each finding with type, count, samples
+        # TODO: Mask sensitive data in output (show first/last 2 chars)
+        # TODO: Add summary statistics
+        # TODO: Return formatted report string
+        pass
+
+def analyze_file(filename):
+    """Analyze a file containing decrypted data."""
+    analyzer = SensitiveDataAnalyzer()
+    
+    # TODO: Read file content
+    # TODO: Attempt base64 decode if applicable
+    # TODO: Call analyzer.analyze_json() or analyze_text()
+    # TODO: Generate report with analyzer.generate_report()
+    # TODO: Save report to analysis_report.txt
+    # TODO: Display report to console
+    
+    pass
+
+def main():
+    print("Sensitive Data Analyzer")
+    print("=" * 40)
+    
+    # TODO: Analyze encrypted_data.txt
+    # TODO: Display findings summary
+    # TODO: Provide security recommendations
+    
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Execute the Analysis
+Run the analyzer:
+
+python3 data_analyzer.py
+cat analysis_report.txt
+Step 3: Create Security Assessment Report
+Build security_assessment.py:
+
+#!/usr/bin/env python3
+import json
+from datetime import datetime
+
+class KMSSecurityAssessment:
+    def __init__(self):
+        """Initialize security assessment tool."""
+        self.findings = []
+        self.recommendations = []
+    
+    def assess_policy(self, policy_file):
+        """
+        Comprehensive policy vulnerability assessment.
+        
+        Args:
+            policy_file: Path to KMS policy JSON
+        
+        Returns:
+            List of vulnerability dictionaries
+        """
+        # TODO: Load and parse policy
+        # TODO: Check for wildcard principals
+        # TODO: Check for wildcard actions
+        # TODO: Check for missing conditions
+        # TODO: Assign severity levels
+        # TODO: Return vulnerability list
+        pass
+    
+    def generate_recommendations(self, vulnerabilities):
+        """
+        Create remediation recommendations.
+        
+        Args:
+            vulnerabilities: List of detected vulnerabilities
+        
+        Returns:
+            List of recommendation dictionaries
+        """
+        # TODO: Map vulnerability types to recommendations
+        # TODO: Prioritize by severity
+        # TODO: Include specific actions and descriptions
+        # TODO: Add general best practices
+        pass
+    
+    def create_secure_policy_example(self):
+        """
+        Generate example of properly secured KMS policy.
+        
+        Returns:
+            Dictionary representing secure policy
+        """
+        secure_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "AllowRootAccess",
+                    "Effect": "Allow",
+                    "Principal": {
+                        "AWS": "arn:aws:iam::123456789012:root"
+                    },
+                    "Action": "kms:*",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "AllowDecryptionWithConditions",
+                    "Effect": "Allow",
+                    "Principal": {
+                        "AWS": "arn:aws:iam::123456789012:role/AppRole"
+                    },
+                    "Action": ["kms:Decrypt", "kms:DescribeKey"],
+                    "Resource": "*",
+                    "Condition": {
+                        "StringEquals": {
+                            "kms:ViaService": "s3.us-east-1.amazonaws.com"
+                        }
+                    }
+                }
+            ]
+        }
+        return secure_policy
+    
+    def generate_full_report(self, vulnerabilities, recommendations):
+        """
+        Create comprehensive assessment report.
+        
+        Args:
+            vulnerabilities: List of vulnerabilities
+            recommendations: List of recommendations
+        
+        Returns:
+            Formatted report string
+        """
+        # TODO: Create report header with timestamp
+        # TODO: Add executive summary with counts by severity
+        # TODO: Detail each vulnerability
+        # TODO: List prioritized recommendations
+        # TODO: Include secure policy example
+        # TODO: Add compliance considerations
+        pass
+
+def main():
+    assessment = KMSSecurityAssessment()
+    
+    # TODO: Assess vulnerable_policy.json
+    # TODO: Generate recommendations
+    # TODO: Create full report
+    # TODO: Save to kms_security_assessment.txt
+    # TODO: Display summary
+    
+    pass
+
+if __name__ == "__main__":
+    main()
+Run the assessment:
+
+python3 security_assessment.py
+cat kms_security_assessment.txt
+Expected Outcomes
+Upon completing this lab, you will have:
+
+Identified multiple KMS policy vulnerabilities including wildcard principals and missing conditions
+Developed Python tools to interact with KMS API for key listing and decryption
+Created pattern-matching algorithms to detect sensitive data (SSN, credit cards, passwords, API keys)
+Generated comprehensive security assessment reports with prioritized recommendations
+Understood the importance of least-privilege access and condition-based policies
+Troubleshooting Tips
+Issue: boto3 import errors
+
+Solution: Verify Python 3.8+ is active: python3 --version
+Install boto3 if needed: pip3 install boto3
+Issue: AWS credential errors in simulation
+
+Solution: Confirm ~/.aws/credentials and ~/.aws/config exist with correct format
+Check file permissions: chmod 600 ~/.aws/credentials
+Issue: Regex patterns not matching expected data
+
+Solution: Test patterns individually using Python interactive shell
+Use re.IGNORECASE flag for case-insensitive matching
+Verify input data format matches pattern expectations
+Conclusion
+This lab demonstrated critical KMS security vulnerabilities arising from misconfigured key policies. You learned to identify overly permissive access controls, automate decryption attempts, and analyze decrypted data for sensitive information. Key takeaways include:
+
+Always implement least-privilege access with specific principals and actions
+Use condition statements to restrict access by IP, service, or MFA requirements
+Regularly audit KMS key policies and CloudTrail logs for unauthorized access
+Separate encryption keys by data sensitivity and use case
+Enable automatic key rotation for customer-managed keys
+Apply these principles to secure KMS implementations in production environments and prevent unauthorized data access.
