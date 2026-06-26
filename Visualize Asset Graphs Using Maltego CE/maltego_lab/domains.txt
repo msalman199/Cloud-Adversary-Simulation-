@@ -1,0 +1,7 @@
+example-corp.com
+api.example-corp.com
+mail.example-corp.com
+cdn.example-corp.com
+admin.example-corp.com
+dev.example-corp.com
+staging.example-corp.com
