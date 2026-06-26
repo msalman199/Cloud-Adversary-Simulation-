@@ -1502,3 +1502,167 @@ Navigate to:
 ```text
 Manage → Manage Entities
 
+Click:
+
+New Entity
+🧩 Create: Cloud Service Entity
+📌 Configuration
+Name: CloudService
+Display Name: Cloud Service
+Category: Infrastructure
+Description: Represents cloud-hosted services
+🧠 Add Properties
+
+Add the following fields:
+
+Property	Type
+Service Type	String
+Provider	String
+Region	String
+Risk Level	String
+🎯 Why Custom Entities Matter
+
+They allow you to:
+
+Model AWS / Azure / GCP assets
+Add security context (risk scoring)
+Extend Maltego beyond default OSINT
+Improve visualization clarity
+🔹 Step 9.2 — Import CSV Data into Maltego
+
+You will now import structured data generated earlier.
+
+📥 Import Entities
+
+Go to:
+
+File → Import → CSV Import Wizard
+
+Select:
+
+entities.csv
+🧭 Mapping Fields
+CSV Column	Maltego Field
+Entity	Value
+Type	Entity Type
+📊 Result
+
+Your graph now automatically includes:
+
+Domains
+IP addresses
+Emails
+Services
+🔗 Import Relationships
+
+Repeat import for:
+
+edges.csv
+
+Map:
+
+| Source | Target | Relationship |
+
+🔹 Step 9.3 — Save & Export Full Graph
+💾 Save Project
+Ctrl + S
+
+Name:
+
+Complete_Cloud_Asset_Graph
+📦 Export Maltego Project
+File → Export → Maltego Graph (.mtgx)
+📁 Output File
+Complete_Cloud_Asset_Graph.mtgx
+🚀 Task 10 — Troubleshooting Guide
+🔹 Issue 1: Maltego Not Opening
+Fix:
+sudo apt update
+sudo apt install default-jre -y
+maltego
+🔹 Issue 2: Transform Errors
+Cause:
+CE edition limitation
+No API keys configured
+Fix:
+Use manual entities
+Skip premium transforms
+🔹 Issue 3: Graph Too Cluttered
+Fix:
+Use grouping
+Enable filters
+Switch to Hierarchical layout
+🔹 Issue 4: CSV Import Fails
+Fix:
+Ensure UTF-8 encoding
+Remove empty rows
+Validate column headers
+🔹 Issue 5: Java Version Conflict
+java -version
+sudo update-alternatives --config java
+📊 Final Security Insights
+
+From this lab, you now understand:
+
+🧠 1. Asset Relationship Mapping
+
+You can now identify:
+
+Domain → IP mappings
+Email → Organization links
+Service → Host dependencies
+🌐 2. Attack Surface Discovery
+
+Maltego graphs help reveal:
+
+Exposed services
+Public IP infrastructure
+Forgotten assets
+Shadow IT systems
+🔗 3. Relationship Intelligence
+
+You learned how to visualize:
+
+DNS resolution chains
+Service dependencies
+Organizational structure
+🛡️ 4. Security Impact
+
+This enables:
+
+Better penetration testing
+Cloud security audits
+Threat modeling
+Incident response mapping
+🎯 Key Takeaways
+
+✔ Maltego transforms raw data into intelligence
+✔ Graph visualization reveals hidden attack paths
+✔ Asset correlation improves security awareness
+✔ Automation + visualization = powerful reconnaissance
+
+🚀 Final Conclusion
+
+You have successfully completed:
+
+Maltego CE installation and configuration
+Manual graph construction
+Relationship mapping between assets
+Transform-based discovery
+Python-based data preparation
+CSV import automation
+Graph visualization and export
+🔥 Real-World Application
+
+These techniques are used in:
+
+🕵️ Threat Intelligence Analysis
+☁ Cloud Asset Discovery
+🎯 Red Team Operations
+🛡 Security Architecture Design
+📊 SOC Investigation Workflows
+🧠 Final Thought
+
+“Security is not about isolated data — it is about relationships between assets.”
+
+Maltego helps you see what others cannot see: the hidden structure of infrastructure.
