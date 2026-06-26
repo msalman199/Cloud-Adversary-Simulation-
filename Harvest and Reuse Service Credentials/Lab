@@ -1,0 +1,373 @@
+Harvest and Reuse Service Credentials
+Objectives
+By the end of this lab, students will be able to:
+
+Extract API keys and credentials from development tool configurations
+Understand common credential exposure patterns in development environments
+Test harvested credentials against target systems
+Recognize security vulnerabilities in credential management
+Implement basic defensive measures against credential harvesting
+Prerequisites
+Basic Linux command line proficiency
+Understanding of HTTP requests and APIs
+Elementary Python programming skills
+Familiarity with JSON format
+Basic cybersecurity awareness
+Lab Environment
+Your cloud machine includes Python 3, curl, and text editors pre-installed. The environment simulates a realistic development scenario with exposed credentials in configuration files.
+
+Task 1: Discover and Extract Credentials from Configuration Files
+Step 1: Create Simulated Development Environment
+Create directory structure and sample configuration files:
+
+mkdir -p ~/credential-lab/{postman,vscode,extracted}
+cd ~/credential-lab
+Create a Postman collection file with embedded credentials:
+
+cat > postman/api-collection.json << 'EOF'
+{
+  "info": {"name": "API Collection"},
+  "item": [{
+    "name": "Get Users",
+    "request": {
+      "header": [
+        {"key": "X-API-Key", "value": "sk-prod-abc123def456ghi789"},
+        {"key": "Authorization", "value": "Bearer prod-token-xyz789"}
+      ],
+      "url": "https://api.example.com/users"
+    }
+  }],
+  "variable": [
+    {"key": "aws_key", "value": "AKIAIOSFODNN7EXAMPLE"},
+    {"key": "stripe_key", "value": "sk_live_51234567890abcdef"}
+  ]
+}
+EOF
+Create VSCode settings with environment variables:
+
+cat > vscode/settings.json << 'EOF'
+{
+  "terminal.integrated.env.linux": {
+    "API_KEY": "prod-api-key-abc123",
+    "DATABASE_URL": "postgresql://user:SecretPass@server.com:5432/db",
+    "GITHUB_TOKEN": "ghp_1234567890abcdefghijklmnop"
+  }
+}
+EOF
+Step 2: Manual Credential Discovery
+Search for credentials using grep patterns:
+
+# Search for API keys
+grep -ri "api.*key\|token\|secret" postman/ vscode/
+
+# Extract specific patterns
+grep -oE '"value":\s*"[^"]+"' postman/api-collection.json
+
+# Find environment variables
+grep -A 5 "env" vscode/settings.json
+Step 3: Create Credential Extraction Script
+Create a Python script to automate credential harvesting:
+
+#!/usr/bin/env python3
+import json
+import re
+import os
+
+class CredentialHarvester:
+    def __init__(self):
+        self.credentials = []
+        self.patterns = {
+            'api_key': r'(?i)(api[_-]?key)[\s]*[:=][\s]*["\']([^"\']+)["\']',
+            'bearer': r'(?i)(bearer|token)[\s]*[:=][\s]*["\']([^"\']+)["\']',
+            'aws_key': r'(AKIA[0-9A-Z]{16})',
+            'github': r'(ghp_[a-zA-Z0-9]{36})',
+            'database': r'((?:postgresql|mongodb)://[^"\s]+)'
+        }
+    
+    def extract_from_file(self, filepath):
+        """
+        Extract credentials from a file using regex patterns.
+        
+        TODO: Implement file reading
+        TODO: Apply regex patterns to find credentials
+        TODO: Store found credentials in self.credentials list
+        TODO: Return count of credentials found
+        """
+        pass
+    
+    def extract_from_json(self, filepath):
+        """
+        Parse JSON and extract credentials from structure.
+        
+        TODO: Load JSON file
+        TODO: Recursively search for credential-like keys
+        TODO: Check values against patterns
+        TODO: Store results
+        """
+        pass
+    
+    def scan_directory(self, directory):
+        """
+        Scan directory for configuration files.
+        
+        TODO: Walk through directory tree
+        TODO: Identify relevant file types (.json, .conf, .env)
+        TODO: Call appropriate extraction method
+        """
+        pass
+    
+    def save_results(self, output_file):
+        """
+        Save extracted credentials to JSON file.
+        
+        TODO: Format credentials as JSON
+        TODO: Write to output file
+        """
+        pass
+
+# TODO: Create harvester instance
+# TODO: Scan postman and vscode directories
+# TODO: Save results to extracted/credentials.json
+Expected Output: Script should identify 5-7 credentials from configuration files.
+
+Task 2: Test Harvested Credentials Against Target API
+Step 1: Create Mock API Server
+Build a simple API server for testing:
+
+#!/usr/bin/env python3
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+
+class MockAPIHandler(BaseHTTPRequestHandler):
+    VALID_TOKENS = {
+        'sk-prod-abc123def456ghi789': 'api_user',
+        'prod-token-xyz789': 'prod_user'
+    }
+    
+    def do_GET(self):
+        """
+        Handle GET requests to /api/users endpoint.
+        
+        TODO: Extract Authorization or X-API-Key header
+        TODO: Validate against VALID_TOKENS
+        TODO: Return 200 with user data if valid
+        TODO: Return 401 if invalid
+        """
+        pass
+    
+    def send_json_response(self, status, data):
+        """
+        Send JSON response with proper headers.
+        
+        TODO: Set response code
+        TODO: Set Content-Type header
+        TODO: Write JSON data
+        """
+        pass
+
+# TODO: Start server on localhost:8080
+Start the server in background:
+
+python3 mock_api_server.py &
+sleep 2
+Step 2: Manual Credential Testing
+Test API access with different authentication methods:
+
+# Test without credentials (should fail)
+curl -s http://localhost:8080/api/users
+
+# Test with Bearer token
+curl -s -H "Authorization: Bearer prod-token-xyz789" \
+     http://localhost:8080/api/users
+
+# Test with API key
+curl -s -H "X-API-Key: sk-prod-abc123def456ghi789" \
+     http://localhost:8080/api/users
+Step 3: Create Automated Credential Tester
+Build a script to test all harvested credentials:
+
+#!/usr/bin/env python3
+import json
+import requests
+
+class CredentialTester:
+    def __init__(self, base_url="http://localhost:8080"):
+        self.base_url = base_url
+        self.successful = []
+        self.endpoints = [
+            {'path': '/api/users', 'method': 'GET'},
+            {'path': '/api/admin', 'method': 'GET'}
+        ]
+    
+    def load_credentials(self, creds_file):
+        """
+        Load harvested credentials from JSON file.
+        
+        TODO: Read and parse JSON file
+        TODO: Return list of credentials
+        """
+        pass
+    
+    def test_bearer_token(self, token, endpoint):
+        """
+        Test credential as Bearer token.
+        
+        TODO: Create Authorization header
+        TODO: Make HTTP request
+        TODO: Return response details
+        """
+        pass
+    
+    def test_api_key(self, api_key, endpoint):
+        """
+        Test credential as API key.
+        
+        TODO: Create X-API-Key header
+        TODO: Make HTTP request
+        TODO: Check response status
+        """
+        pass
+    
+    def test_credential(self, credential):
+        """
+        Test single credential against all endpoints.
+        
+        TODO: Determine credential type
+        TODO: Try appropriate authentication method
+        TODO: Record successful authentications
+        """
+        pass
+    
+    def run_tests(self, creds_file):
+        """
+        Test all credentials from file.
+        
+        TODO: Load credentials
+        TODO: Iterate and test each one
+        TODO: Print summary of results
+        """
+        pass
+
+# TODO: Create tester instance
+# TODO: Run tests on extracted credentials
+# TODO: Display results
+Expected Output: Script should successfully authenticate with 2-3 valid credentials.
+
+Task 3: Implement Automated Attack Chain
+Step 1: Create End-to-End Automation
+Build a comprehensive script combining harvesting and testing:
+
+#!/usr/bin/env python3
+import argparse
+import time
+
+class AutomatedAttack:
+    def __init__(self, target_url):
+        self.target_url = target_url
+        self.harvester = None  # CredentialHarvester instance
+        self.tester = None     # CredentialTester instance
+        self.results = {
+            'harvested': 0,
+            'tested': 0,
+            'successful': 0
+        }
+    
+    def phase1_harvest(self, scan_dirs):
+        """
+        Phase 1: Harvest credentials from directories.
+        
+        TODO: Initialize harvester
+        TODO: Scan each directory
+        TODO: Save harvested credentials
+        TODO: Update results count
+        """
+        pass
+    
+    def phase2_test(self, creds_file):
+        """
+        Phase 2: Test harvested credentials.
+        
+        TODO: Initialize tester
+        TODO: Load credentials
+        TODO: Test against target
+        TODO: Record successful auths
+        """
+        pass
+    
+    def phase3_exploit(self):
+        """
+        Phase 3: Demonstrate data access with valid credentials.
+        
+        TODO: Use successful credentials
+        TODO: Access protected endpoints
+        TODO: Extract sensitive data
+        """
+        pass
+    
+    def generate_report(self, output_file):
+        """
+        Generate attack report with findings.
+        
+        TODO: Compile all results
+        TODO: Format as JSON report
+        TODO: Include recommendations
+        """
+        pass
+
+# TODO: Parse command line arguments
+# TODO: Execute attack phases
+# TODO: Generate final report
+Step 2: Execute Complete Attack Chain
+Run the automated attack:
+
+python3 automated_attack.py --scan postman,vscode --target http://localhost:8080
+Step 3: Analyze Attack Results
+Review the generated report:
+
+cat extracted/attack_report.json | python3 -m json.tool
+Expected Outcomes
+After completing this lab, you should have:
+
+Extracted 5-7 credentials from configuration files
+Successfully authenticated with 2-3 valid credentials
+Accessed protected API endpoints using harvested credentials
+Generated a comprehensive attack report
+Understanding of credential exposure risks
+Troubleshooting Tips
+Issue: Script cannot find credentials
+
+Verify JSON files are properly formatted
+Check regex patterns match credential formats
+Ensure file paths are correct
+Issue: API server not responding
+
+Confirm server is running: ps aux | grep mock_api
+Check port 8080 is not in use: netstat -tuln | grep 8080
+Restart server if needed
+Issue: Authentication always fails
+
+Verify credentials match server's VALID_TOKENS
+Check header format (Bearer vs API key)
+Examine server logs for error details
+Conclusion
+This lab demonstrated how credentials can be inadvertently exposed in development tools and configuration files. You learned to:
+
+Identify common credential storage locations
+Extract credentials using pattern matching
+Test harvested credentials against target systems
+Automate the complete attack chain
+Security Recommendations:
+
+Never store credentials in configuration files
+Use environment variables or secret management systems
+Implement credential rotation policies
+Monitor for exposed credentials in repositories
+Use tools like git-secrets to prevent commits with credentials
+Cleanup:
+
+# Stop mock API server
+pkill -f mock_api_server.py
+
+# Remove lab files (optional)
+rm -rf ~/credential-lab
+This lab illustrates why proper credential management is critical for application security. Always follow security best practices in real-world development.
