@@ -1,0 +1,8 @@
+{
+    "Name": "/myapp/auth/oauth-token",
+    "Type": "SecureString",
+    "Value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+    "Version": 3,
+    "LastModifiedDate": "2024-01-18T11:20:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/auth/oauth-token"
+}
