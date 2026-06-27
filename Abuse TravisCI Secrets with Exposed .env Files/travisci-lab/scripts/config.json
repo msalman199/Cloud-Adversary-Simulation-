@@ -1,0 +1,14 @@
+{
+  "github_search_terms": [
+    "filename:.env DB_PASSWORD",
+    "filename:.env AWS_ACCESS_KEY",
+    "filename:.env STRIPE_SECRET"
+  ],
+  "travis_repos": [
+    "example/test-repo"
+  ],
+  "max_threads": 3,
+  "delay_seconds": 2,
+  "validate_secrets": true,
+  "output_dir": "findings"
+}
