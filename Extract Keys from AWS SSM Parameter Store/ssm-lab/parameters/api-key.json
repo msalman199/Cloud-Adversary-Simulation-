@@ -1,0 +1,8 @@
+{
+    "Name": "/myapp/external/api-key",
+    "Type": "SecureString",
+    "Value": "sk-1234567890abcdef1234567890abcdef",
+    "Version": 2,
+    "LastModifiedDate": "2024-01-10T14:20:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/external/api-key"
+}
