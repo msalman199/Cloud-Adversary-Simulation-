@@ -1,0 +1,674 @@
+Abuse TravisCI Secrets with Exposed .env Files
+Objectives
+By the end of this lab, students will be able to:
+
+Identify exposed .env files in CI/CD pipelines and public repositories
+Extract sensitive credentials from environment files and build logs
+Validate and test discovered secrets for unauthorized access
+Develop automated Python tools for secret discovery and exploitation
+Implement defensive measures to prevent secret exposure in CI/CD environments
+Prerequisites
+Before starting this lab, students should have:
+
+Basic Python programming skills and understanding of REST APIs
+Familiarity with Git, GitHub, and CI/CD concepts
+Understanding of environment variables and configuration management
+Basic knowledge of web application security principles
+Lab Environment Setup
+Ready-to-Use Cloud Machines: Al Nafi provides Linux-based cloud machines for this lab. Simply click Start Lab to access your pre-configured environment.
+
+Your lab machine comes pre-installed with:
+
+Python 3.8+ with requests library
+Git and curl utilities
+Text editors (nano, vim)
+Create your working directory:
+
+mkdir -p ~/travisci-lab/{scripts,findings,reports}
+cd ~/travisci-lab
+Task 1: Discover Exposed .env Files
+Understanding .env File Risks
+Environment files commonly contain:
+
+Database credentials (DB_HOST, DB_PASSWORD)
+API keys (STRIPE_SECRET_KEY, SENDGRID_API_KEY)
+OAuth secrets (GOOGLE_CLIENT_SECRET)
+Cloud provider credentials (AWS_ACCESS_KEY_ID)
+Authentication tokens (GITHUB_TOKEN)
+When committed to repositories or exposed in CI/CD logs, these secrets enable unauthorized access.
+
+Step 1.1: Create GitHub Secret Scanner
+Create a script to search for exposed .env files:
+
+nano scripts/github_scanner.py
+#!/usr/bin/env python3
+import requests
+import json
+import time
+from urllib.parse import quote
+
+class GitHubSecretScanner:
+    def __init__(self, github_token=None):
+        self.api_base = "https://api.github.com"
+        self.headers = {
+            'User-Agent': 'Security-Scanner',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        if github_token:
+            self.headers['Authorization'] = f'token {github_token}'
+        self.results = []
+    
+    def search_env_files(self, search_terms):
+        """
+        Search GitHub for .env files containing sensitive data.
+        
+        Args:
+            search_terms: List of search queries
+        
+        Returns:
+            List of discovered files with metadata
+        """
+        # TODO: Implement GitHub Code Search API calls
+        # TODO: Parse response and extract file information
+        # TODO: Handle rate limiting with time.sleep()
+        # TODO: Store results in self.results list
+        pass
+    
+    def download_file_content(self, download_url):
+        """
+        Download and return file content from GitHub.
+        
+        Args:
+            download_url: Raw file URL from GitHub
+        
+        Returns:
+            File content as string
+        """
+        # TODO: Make GET request to download_url
+        # TODO: Return response text
+        # TODO: Handle errors appropriately
+        pass
+    
+    def save_results(self, filename):
+        """Save scan results to JSON file."""
+        # TODO: Write self.results to file as JSON
+        pass
+
+if __name__ == "__main__":
+    scanner = GitHubSecretScanner()
+    
+    search_queries = [
+        "filename:.env DB_PASSWORD",
+        "filename:.env API_KEY",
+        "filename:.env SECRET_KEY"
+    ]
+    
+    # TODO: Call search_env_files with queries
+    # TODO: Save results to findings/github_results.json
+    print("[+] Scan complete")
+Step 1.2: Create TravisCI Log Analyzer
+Build a tool to analyze TravisCI build logs:
+
+nano scripts/travis_analyzer.py
+#!/usr/bin/env python3
+import requests
+import re
+import json
+
+class TravisLogAnalyzer:
+    def __init__(self):
+        self.travis_api = "https://api.travis-ci.org"
+        self.headers = {
+            'Travis-API-Version': '3',
+            'User-Agent': 'Travis-Analyzer'
+        }
+        self.secret_patterns = {
+            'env_var': r'export\s+([A-Z_]+)=([^\s]+)',
+            'api_key': r'([A-Z_]*(?:KEY|TOKEN|SECRET)[A-Z_]*)=([^\s]+)',
+            'database': r'DB_(?:HOST|USER|PASS|PASSWORD)=([^\s]+)',
+            'aws': r'AWS_(?:ACCESS_KEY_ID|SECRET_ACCESS_KEY)=([^\s]+)'
+        }
+    
+    def get_repo_builds(self, repo_slug):
+        """
+        Fetch recent builds for a repository.
+        
+        Args:
+            repo_slug: Repository in format 'owner/repo'
+        
+        Returns:
+            List of build objects
+        """
+        # TODO: Make API request to /repos/{repo_slug}/builds
+        # TODO: Return list of builds (limit to 10 most recent)
+        # TODO: Handle API errors
+        pass
+    
+    def fetch_build_log(self, build_id):
+        """
+        Retrieve build log content.
+        
+        Args:
+            build_id: TravisCI build ID
+        
+        Returns:
+            Log content as string
+        """
+        # TODO: Request log from /builds/{build_id}/log
+        # TODO: Return log text
+        pass
+    
+    def extract_secrets(self, log_content):
+        """
+        Extract potential secrets from log using regex patterns.
+        
+        Args:
+            log_content: Build log text
+        
+        Returns:
+            List of dictionaries with key-value pairs
+        """
+        # TODO: Apply each pattern in self.secret_patterns
+        # TODO: Filter out false positives (values starting with $, too short)
+        # TODO: Return list of found secrets
+        pass
+    
+    def analyze_repository(self, repo_slug):
+        """Complete analysis of a repository's builds."""
+        # TODO: Get builds using get_repo_builds()
+        # TODO: For each build, fetch log and extract secrets
+        # TODO: Compile and return results
+        pass
+
+if __name__ == "__main__":
+    analyzer = TravisLogAnalyzer()
+    
+    # TODO: Analyze target repositories
+    # TODO: Save results to findings/travis_secrets.json
+    print("[+] Analysis complete")
+Step 1.3: Run Discovery Scans
+Execute your scanners:
+
+chmod +x scripts/*.py
+python3 scripts/github_scanner.py
+python3 scripts/travis_analyzer.py
+Review discovered files:
+
+cat findings/github_results.json | jq '.[] | {repo, file_path}'
+cat findings/travis_secrets.json | jq '.[] | {key, value}'
+Task 2: Extract and Validate Secrets
+Step 2.1: Create Test Environment
+Generate a sample .env file for testing:
+
+nano findings/test.env
+# Database Configuration
+DB_HOST=prod-db.example.com
+DB_USER=admin
+DB_PASSWORD=P@ssw0rd123!
+DB_NAME=production
+
+# API Keys
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+STRIPE_SECRET_KEY=sk_live_abcdef123456789012345678
+
+# Third-party Services
+SLACK_WEBHOOK=https://hooks.slack.com/services/T00/B00/XXXX
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Step 2.2: Build Secret Extraction Tool
+Create a parser and validator:
+
+nano scripts/secret_extractor.py
+#!/usr/bin/env python3
+import re
+import requests
+import json
+from typing import Dict, List, Tuple
+
+class SecretExtractor:
+    def __init__(self):
+        self.secrets = {}
+        self.validation_results = {}
+    
+    def parse_env_file(self, filepath: str) -> Dict[str, str]:
+        """
+        Parse .env file and extract key-value pairs.
+        
+        Args:
+            filepath: Path to .env file
+        
+        Returns:
+            Dictionary of environment variables
+        """
+        # TODO: Read file content
+        # TODO: Use regex to match KEY=value patterns
+        # TODO: Clean values (strip quotes, whitespace)
+        # TODO: Filter out comments and empty lines
+        # TODO: Return dictionary of secrets
+        pass
+    
+    def categorize_secrets(self) -> Dict[str, List[str]]:
+        """
+        Categorize secrets by type (database, api, cloud, etc).
+        
+        Returns:
+            Dictionary with categories as keys
+        """
+        categories = {
+            'database': [],
+            'cloud': [],
+            'api_keys': [],
+            'oauth': [],
+            'webhooks': []
+        }
+        
+        # TODO: Iterate through self.secrets
+        # TODO: Categorize based on key names
+        # TODO: Return categorized dictionary
+        pass
+    
+    def validate_github_token(self, token: str) -> Dict:
+        """
+        Validate GitHub personal access token.
+        
+        Args:
+            token: GitHub token to validate
+        
+        Returns:
+            Validation result with user info and permissions
+        """
+        # TODO: Make request to https://api.github.com/user
+        # TODO: Include Authorization header with token
+        # TODO: Check response status and extract user data
+        # TODO: Test permissions (repos, orgs, etc.)
+        # TODO: Return validation result dictionary
+        pass
+    
+    def validate_aws_credentials(self, access_key: str, secret_key: str) -> Dict:
+        """
+        Validate AWS credentials using boto3.
+        
+        Args:
+            access_key: AWS access key ID
+            secret_key: AWS secret access key
+        
+        Returns:
+            Validation result with account info
+        """
+        # TODO: Import boto3 (handle ImportError)
+        # TODO: Create session with credentials
+        # TODO: Use STS get_caller_identity() to validate
+        # TODO: Return account ID, user ARN, etc.
+        pass
+    
+    def test_database_connection(self, host: str, user: str, 
+                                 password: str, database: str) -> Dict:
+        """
+        Test database connectivity (simulation for safety).
+        
+        Returns:
+            Connection test results
+        """
+        # TODO: Create connection string
+        # TODO: Return simulated test result (DO NOT actually connect)
+        # TODO: Include warning about actual testing
+        pass
+    
+    def validate_all_secrets(self):
+        """Validate all extracted secrets based on type."""
+        # TODO: Iterate through categorized secrets
+        # TODO: Call appropriate validation function for each type
+        # TODO: Store results in self.validation_results
+        # TODO: Handle validation errors gracefully
+        pass
+    
+    def generate_report(self, output_file: str):
+        """Generate comprehensive extraction and validation report."""
+        # TODO: Compile all data into report structure
+        # TODO: Include timestamp, secrets count, validation results
+        # TODO: Write to JSON file
+        pass
+
+if __name__ == "__main__":
+    extractor = SecretExtractor()
+    
+    # TODO: Parse test.env file
+    # TODO: Categorize secrets
+    # TODO: Validate secrets (be careful with real credentials!)
+    # TODO: Generate report
+    print("[+] Extraction complete")
+Step 2.3: Execute Extraction and Validation
+Run the extractor:
+
+python3 scripts/secret_extractor.py
+Review results:
+
+cat findings/extraction_report.json | jq '.validation_results'
+Task 3: Automate Complete Exploitation Workflow
+Step 3.1: Build Automated Exploitation Framework
+Create a comprehensive automation tool:
+
+nano scripts/automated_exploiter.py
+#!/usr/bin/env python3
+import os
+import sys
+import json
+import time
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
+class AutomatedExploiter:
+    def __init__(self, config_file: str = None):
+        self.config = self.load_config(config_file)
+        self.results = {
+            'scan_start': datetime.now().isoformat(),
+            'targets_found': 0,
+            'secrets_extracted': 0,
+            'validated_secrets': 0,
+            'findings': []
+        }
+    
+    def load_config(self, config_file: str) -> dict:
+        """
+        Load configuration from JSON file or use defaults.
+        
+        Args:
+            config_file: Path to config JSON
+        
+        Returns:
+            Configuration dictionary
+        """
+        default_config = {
+            'github_search_terms': [
+                'filename:.env DB_PASSWORD',
+                'filename:.env API_KEY',
+                'filename:.env SECRET'
+            ],
+            'travis_repos': [],
+            'max_threads': 5,
+            'delay_seconds': 2,
+            'validate_secrets': True,
+            'output_dir': 'findings'
+        }
+        
+        # TODO: If config_file exists, load and merge with defaults
+        # TODO: Return configuration dictionary
+        pass
+    
+    def scan_github(self):
+        """Execute GitHub scanning phase."""
+        # TODO: Initialize GitHubSecretScanner
+        # TODO: Run searches for each term in config
+        # TODO: Update self.results with findings
+        pass
+    
+    def scan_travis(self):
+        """Execute TravisCI scanning phase."""
+        # TODO: Initialize TravisLogAnalyzer
+        # TODO: Analyze each repo in config
+        # TODO: Update self.results with findings
+        pass
+    
+    def process_target(self, target: dict) -> dict:
+        """
+        Process a single target (download, extract, validate).
+        
+        Args:
+            target: Target information dictionary
+        
+        Returns:
+            Processing results
+        """
+        # TODO: Download file content
+        # TODO: Extract secrets using SecretExtractor
+        # TODO: Validate secrets if enabled in config
+        # TODO: Return results dictionary
+        pass
+    
+    def parallel_processing(self, targets: list):
+        """
+        Process multiple targets in parallel using ThreadPoolExecutor.
+        
+        Args:
+            targets: List of target dictionaries
+        """
+        # TODO: Create ThreadPoolExecutor with max_threads from config
+        # TODO: Submit process_target for each target
+        # TODO: Collect results as they complete
+        # TODO: Update self.results
+        pass
+    
+    def generate_exploitation_commands(self) -> list:
+        """
+        Generate practical exploitation commands based on findings.
+        
+        Returns:
+            List of command strings
+        """
+        commands = []
+        
+        # TODO: Iterate through validated secrets
+        # TODO: Generate appropriate commands for each secret type
+        # TODO: For GitHub tokens: git clone commands
+        # TODO: For AWS keys: aws cli commands
+        # TODO: For database creds: connection strings
+        # TODO: Return list of commands
+        pass
+    
+    def save_comprehensive_report(self):
+        """Save complete exploitation report with all findings."""
+        # TODO: Compile all results into report structure
+        # TODO: Include scan metadata, findings, commands
+        # TODO: Save to JSON file
+        # TODO: Generate human-readable summary
+        pass
+    
+    def run_full_exploitation(self):
+        """Execute complete automated exploitation workflow."""
+        print("[+] Starting automated exploitation workflow...")
+        
+        # TODO: Run GitHub scanning
+        # TODO: Run TravisCI scanning
+        # TODO: Process all targets in parallel
+        # TODO: Generate exploitation commands
+        # TODO: Save comprehensive report
+        
+        print(f"[+] Workflow complete. Found {self.results['secrets_extracted']} secrets")
+
+def main():
+    parser = argparse.ArgumentParser(description='Automated Secret Exploitation Tool')
+    parser.add_argument('-c', '--config', help='Configuration file path')
+    parser.add_argument('-o', '--output', default='findings', help='Output directory')
+    args = parser.parse_args()
+    
+    # TODO: Initialize AutomatedExploiter with config
+    # TODO: Run full exploitation workflow
+    # TODO: Print summary of results
+
+if __name__ == "__main__":
+    main()
+Step 3.2: Create Configuration File
+nano config.json
+{
+  "github_search_terms": [
+    "filename:.env DB_PASSWORD",
+    "filename:.env AWS_ACCESS_KEY",
+    "filename:.env STRIPE_SECRET"
+  ],
+  "travis_repos": [
+    "example/test-repo"
+  ],
+  "max_threads": 3,
+  "delay_seconds": 2,
+  "validate_secrets": true,
+  "output_dir": "findings"
+}
+Step 3.3: Execute Automated Exploitation
+Run the complete workflow:
+
+python3 scripts/automated_exploiter.py -c config.json
+Review comprehensive report:
+
+cat findings/exploitation_report.json | jq '.'
+cat findings/exploitation_commands.txt
+Task 4: Implement Defensive Measures
+Step 4.1: Create Secret Detection Tool
+Build a pre-commit hook to detect secrets:
+
+nano scripts/secret_detector.py
+#!/usr/bin/env python3
+import re
+import sys
+
+class SecretDetector:
+    def __init__(self):
+        self.patterns = {
+            'github_token': r'gh[ps]_[A-Za-z0-9_]{36}',
+            'aws_key': r'AKIA[0-9A-Z]{16}',
+            'private_key': r'-----BEGIN (?:RSA |EC )?PRIVATE KEY-----',
+            'generic_secret': r'(?i)(password|secret|key|token)\s*[:=]\s*["\']?[^\s"\']{8,}'
+        }
+    
+    def scan_file(self, filepath: str) -> list:
+        """
+        Scan file for potential secrets.
+        
+        Args:
+            filepath: Path to file to scan
+        
+        Returns:
+            List of findings with line numbers
+        """
+        # TODO: Read file content
+        # TODO: Apply each regex pattern
+        # TODO: Record matches with line numbers
+        # TODO: Return list of findings
+        pass
+    
+    def scan_directory(self, directory: str) -> dict:
+        """Recursively scan directory for secrets."""
+        # TODO: Walk directory tree
+        # TODO: Scan each file
+        # TODO: Compile results by file
+        pass
+
+if __name__ == "__main__":
+    # TODO: Implement CLI for scanning
+    # TODO: Exit with error code if secrets found
+    pass
+Step 4.2: Security Best Practices
+Implement these defensive measures:
+
+1. Use Secret Management Tools:
+
+HashiCorp Vault for centralized secret storage
+AWS Secrets Manager or Azure Key Vault for cloud secrets
+Encrypted environment variables in CI/CD platforms
+2. Configure .gitignore:
+
+echo ".env" >> .gitignore
+echo ".env.*" >> .gitignore
+echo "*.pem" >> .gitignore
+echo "*.key" >> .gitignore
+3. Enable TravisCI Secret Encryption:
+
+# Install Travis CLI
+gem install travis
+
+# Encrypt secrets
+travis encrypt MY_SECRET=super_secret --add
+4. Implement Pre-commit Hooks:
+
+# Create pre-commit hook
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/bash
+python3 scripts/secret_detector.py --staged
+if [ $? -ne 0 ]; then
+    echo "Error: Secrets detected in staged files!"
+    exit 1
+fi
+EOF
+
+chmod +x .git/hooks/pre-commit
+Step 4.3: Audit Existing Repositories
+Create an audit script:
+
+nano scripts/repo_auditor.py
+#!/usr/bin/env python3
+import subprocess
+import json
+
+class RepositoryAuditor:
+    def scan_git_history(self, repo_path: str) -> list:
+        """
+        Scan entire git history for secrets.
+        
+        Args:
+            repo_path: Path to git repository
+        
+        Returns:
+            List of commits containing potential secrets
+        """
+        # TODO: Use git log to get all commits
+        # TODO: For each commit, check diff for secret patterns
+        # TODO: Record commits with findings
+        pass
+    
+    def generate_remediation_plan(self, findings: list) -> dict:
+        """Generate plan to remove secrets from history."""
+        # TODO: Create list of affected files
+        # TODO: Generate git filter-branch commands
+        # TODO: Create backup recommendations
+        pass
+
+if __name__ == "__main__":
+    # TODO: Implement repository auditing
+    pass
+Expected Outcomes
+After completing this lab, you should have:
+
+Discovery Tools: Scripts that identify exposed .env files in GitHub and TravisCI
+Extraction Capabilities: Tools to parse and extract secrets from various sources
+Validation Framework: Methods to verify and test discovered credentials
+Automation Pipeline: Complete workflow for automated secret exploitation
+Defensive Measures: Pre-commit hooks and detection tools to prevent exposure
+Security Awareness: Understanding of CI/CD secret management risks
+Troubleshooting Tips
+Issue: GitHub API Rate Limiting
+
+Solution: Add authentication token to increase rate limits (5000 requests/hour)
+Use time.sleep() between requests
+Check rate limit status: curl -H "Authorization: token YOUR_TOKEN" https://api.github.com/rate_limit
+Issue: TravisCI API Returns 404
+
+Solution: Verify repository exists and has TravisCI enabled
+Check if builds are public (private builds require authentication)
+Use correct API version in headers
+Issue: Secret Validation Fails
+
+Solution: Ensure credentials are not expired or revoked
+Check network connectivity to validation endpoints
+Verify correct credential format (some APIs have specific requirements)
+Conclusion
+This lab demonstrated the critical security risks of exposed secrets in CI/CD pipelines. You learned to:
+
+Discover exposed .env files through automated scanning
+Extract and validate credentials from multiple sources
+Build comprehensive automation tools for exploitation workflows
+Implement defensive measures including pre-commit hooks and secret detection
+Key Takeaways:
+
+Never commit secrets to version control
+Use encrypted secret management in CI/CD platforms
+Implement automated secret detection in development workflows
+Regularly audit repositories for historical secret exposure
+Rotate credentials immediately if exposure is suspected
+Next Steps:
+
+Integrate secret detection into your CI/CD pipeline
+Implement organization-wide secret management policies
+Practice secure credential rotation procedures
+Explore advanced tools like git-secrets and TruffleHog
+Remember: This lab is for educational purposes only. Always obtain proper authorization before testing security on systems you don't own.
