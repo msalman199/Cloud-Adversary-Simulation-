@@ -1,0 +1,557 @@
+Extract Keys from AWS SSM Parameter Store
+Objectives
+By the end of this lab, students will be able to:
+
+Understand AWS Systems Manager Parameter Store security implications
+Query and enumerate SSM parameters to identify stored secrets
+Identify common misconfigurations in parameter permissions
+Automate parameter extraction using Python
+Recognize security vulnerabilities in cloud parameter storage
+Prerequisites
+Basic understanding of AWS services and IAM concepts
+Familiarity with Linux command line operations
+Basic Python programming knowledge
+Understanding of JSON data structures
+Lab Environment
+Al Nafi provides pre-configured Linux-based cloud machines for this lab. Click Start Lab to access your environment with pre-installed tools:
+
+AWS CLI v2
+Python 3.8+
+Text editors (nano, vim)
+JSON processing utilities
+Task 1: Set Up Simulated SSM Parameter Store
+Step 1.1: Create Directory Structure
+Create a local environment to simulate AWS SSM Parameter Store:
+
+mkdir -p ~/ssm-lab/parameters
+cd ~/ssm-lab
+Step 1.2: Create Sample Parameters
+Generate sample parameter files representing different types of stored secrets:
+
+# Database password parameter
+cat > parameters/db-password.json << 'EOF'
+{
+    "Name": "/myapp/database/password",
+    "Type": "SecureString",
+    "Value": "MySecretDBPassword123!",
+    "Version": 1,
+    "LastModifiedDate": "2024-01-15T10:30:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/database/password"
+}
+EOF
+
+# API key parameter
+cat > parameters/api-key.json << 'EOF'
+{
+    "Name": "/myapp/external/api-key",
+    "Type": "SecureString",
+    "Value": "sk-1234567890abcdef1234567890abcdef",
+    "Version": 2,
+    "LastModifiedDate": "2024-01-10T14:20:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/external/api-key"
+}
+EOF
+
+# Configuration parameter (plaintext - vulnerability)
+cat > parameters/config.json << 'EOF'
+{
+    "Name": "/myapp/config/admin-password",
+    "Type": "String",
+    "Value": "admin123",
+    "Version": 1,
+    "LastModifiedDate": "2024-01-05T09:15:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/config/admin-password"
+}
+EOF
+
+# SSH private key parameter
+cat > parameters/ssh-key.json << 'EOF'
+{
+    "Name": "/myapp/ssh/private-key",
+    "Type": "SecureString",
+    "Value": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...[truncated]",
+    "Version": 1,
+    "LastModifiedDate": "2024-01-12T16:45:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/ssh/private-key"
+}
+EOF
+
+# OAuth token parameter
+cat > parameters/oauth-token.json << 'EOF'
+{
+    "Name": "/myapp/auth/oauth-token",
+    "Type": "SecureString",
+    "Value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+    "Version": 3,
+    "LastModifiedDate": "2024-01-18T11:20:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/auth/oauth-token"
+}
+EOF
+Step 1.3: Verify Setup
+ls -la parameters/
+cat parameters/db-password.json | python3 -m json.tool
+Task 2: Enumerate and Extract Parameters
+Step 2.1: Create Parameter Enumeration Script
+Create a Python script to enumerate all parameters. Students must complete the implementation:
+
+#!/usr/bin/env python3
+"""
+SSM Parameter Enumeration Tool
+Students: Complete the TODO sections to implement parameter discovery
+"""
+
+import json
+import os
+import glob
+
+class SSMParameterEnumerator:
+    def __init__(self, parameters_dir="parameters"):
+        self.parameters_dir = parameters_dir
+        self.found_parameters = []
+    
+    def list_all_parameters(self):
+        """
+        Enumerate all parameters in the simulated Parameter Store
+        
+        TODO: Implement the following:
+        1. Use glob to find all .json files in parameters_dir
+        2. Load each JSON file and parse the parameter data
+        3. Append each parameter to self.found_parameters
+        4. Print parameter name, type, and version
+        5. Return the list of parameters
+        """
+        print("[+] Enumerating SSM Parameters...")
+        
+        # TODO: Implement parameter enumeration
+        pass
+    
+    def filter_by_path(self, path_prefix):
+        """
+        Filter parameters by path prefix (e.g., /myapp/database/)
+        
+        TODO: Implement filtering logic
+        Args:
+            path_prefix: The path prefix to filter by
+        Returns:
+            List of matching parameters
+        """
+        # TODO: Filter parameters where Name starts with path_prefix
+        pass
+    
+    def filter_by_type(self, param_type):
+        """
+        Filter parameters by type (String or SecureString)
+        
+        TODO: Implement type filtering
+        Args:
+            param_type: The parameter type to filter by
+        Returns:
+            List of matching parameters
+        """
+        # TODO: Filter parameters by Type field
+        pass
+
+if __name__ == "__main__":
+    enumerator = SSMParameterEnumerator()
+    # TODO: Call list_all_parameters()
+    # TODO: Test filter_by_path() with "/myapp/database/"
+    # TODO: Test filter_by_type() with "SecureString"
+Save as enumerate_parameters.py and make executable:
+
+chmod +x enumerate_parameters.py
+Step 2.2: Create Vulnerability Assessment Script
+Create a script to identify security issues. Students complete the implementation:
+
+#!/usr/bin/env python3
+"""
+SSM Parameter Vulnerability Assessment
+Students: Complete the security checks
+"""
+
+import json
+import os
+import re
+
+class SSMVulnerabilityScanner:
+    def __init__(self, parameters_dir="parameters"):
+        self.parameters_dir = parameters_dir
+        self.vulnerabilities = []
+        self.sensitive_keywords = [
+            'password', 'secret', 'key', 'token', 
+            'credential', 'auth', 'private'
+        ]
+    
+    def load_parameters(self):
+        """
+        Load all parameters from directory
+        
+        TODO: Implement parameter loading
+        Returns:
+            List of parameter dictionaries
+        """
+        # TODO: Load all JSON files from parameters_dir
+        pass
+    
+    def check_plaintext_secrets(self, parameters):
+        """
+        Identify sensitive data stored as plaintext (Type: String)
+        
+        TODO: Implement the following checks:
+        1. Check if parameter name contains sensitive keywords
+        2. Check if Type is "String" (not SecureString)
+        3. If both true, add to vulnerabilities list
+        4. Print findings with severity level
+        """
+        print("[+] Checking for plaintext secrets...")
+        
+        # TODO: Implement plaintext secret detection
+        pass
+    
+    def check_naming_conventions(self, parameters):
+        """
+        Check for overly descriptive parameter names
+        
+        TODO: Identify parameters with names that reveal:
+        - Environment (prod, production, staging)
+        - Access level (admin, root, master)
+        - Specific technologies (mysql, postgres, redis)
+        """
+        print("[+] Checking parameter naming conventions...")
+        
+        # TODO: Implement naming convention checks
+        pass
+    
+    def check_version_history(self, parameters):
+        """
+        Identify parameters with multiple versions
+        
+        TODO: Check Version field and flag parameters with Version > 1
+        Note: Old versions may contain different secrets
+        """
+        print("[+] Checking parameter version history...")
+        
+        # TODO: Implement version history checks
+        pass
+    
+    def generate_report(self):
+        """
+        Generate vulnerability report
+        
+        TODO: Create a summary report showing:
+        - Total vulnerabilities found
+        - Breakdown by severity (CRITICAL, HIGH, MEDIUM, LOW)
+        - Specific findings with recommendations
+        """
+        # TODO: Implement report generation
+        pass
+
+if __name__ == "__main__":
+    scanner = SSMVulnerabilityScanner()
+    # TODO: Load parameters
+    # TODO: Run all security checks
+    # TODO: Generate report
+Save as assess_vulnerabilities.py and make executable.
+
+Step 2.3: Extract Sensitive Values
+Create a script to extract and categorize secrets:
+
+#!/usr/bin/env python3
+"""
+SSM Secret Extraction Tool
+Students: Complete the extraction logic
+"""
+
+import json
+import os
+import hashlib
+from datetime import datetime
+
+class SSMSecretExtractor:
+    def __init__(self, parameters_dir="parameters"):
+        self.parameters_dir = parameters_dir
+        self.extracted_secrets = {}
+    
+    def extract_all_secrets(self):
+        """
+        Extract all parameter values
+        
+        TODO: Implement extraction:
+        1. Load all parameters
+        2. Extract Name and Value fields
+        3. Store in self.extracted_secrets dictionary
+        4. Print extracted secrets (mask sensitive parts)
+        """
+        # TODO: Implement secret extraction
+        pass
+    
+    def categorize_secrets(self):
+        """
+        Categorize secrets by type
+        
+        TODO: Create categories:
+        - database_credentials
+        - api_keys
+        - ssh_keys
+        - tokens
+        - certificates
+        
+        Use parameter names and value patterns to categorize
+        """
+        categories = {
+            'database_credentials': [],
+            'api_keys': [],
+            'ssh_keys': [],
+            'tokens': [],
+            'other': []
+        }
+        
+        # TODO: Implement categorization logic
+        pass
+    
+    def analyze_secret_strength(self, secret_value, secret_type):
+        """
+        Analyze secret strength and format
+        
+        TODO: For passwords, check:
+        - Length (minimum 12 characters)
+        - Complexity (uppercase, lowercase, numbers, special chars)
+        - Common patterns
+        
+        For keys/tokens, check:
+        - Format validity
+        - Length appropriateness
+        """
+        # TODO: Implement strength analysis
+        pass
+    
+    def save_extracted_data(self, output_file="extracted_secrets.json"):
+        """
+        Save extracted secrets to file
+        
+        TODO: Save self.extracted_secrets to JSON file
+        Include metadata: extraction timestamp, parameter count
+        """
+        # TODO: Implement save functionality
+        pass
+
+if __name__ == "__main__":
+    extractor = SSMSecretExtractor()
+    # TODO: Extract all secrets
+    # TODO: Categorize secrets
+    # TODO: Analyze secret strength
+    # TODO: Save results
+Save as extract_secrets.py and make executable.
+
+Task 3: Automate Complete Parameter Store Analysis
+Step 3.1: Create Comprehensive Automation Framework
+Build an integrated tool combining all previous functionality:
+
+#!/usr/bin/env python3
+"""
+Automated SSM Parameter Store Security Analysis
+Students: Integrate all components into a complete tool
+"""
+
+import json
+import os
+import sys
+import argparse
+from datetime import datetime
+
+class AutomatedSSMAnalyzer:
+    def __init__(self, parameters_dir="parameters", output_dir="analysis_results"):
+        self.parameters_dir = parameters_dir
+        self.output_dir = output_dir
+        self.analysis_data = {
+            'parameters': [],
+            'vulnerabilities': [],
+            'extracted_secrets': {},
+            'statistics': {},
+            'timestamp': datetime.now().isoformat()
+        }
+        os.makedirs(output_dir, exist_ok=True)
+    
+    def run_full_analysis(self):
+        """
+        Execute complete parameter store analysis
+        
+        TODO: Implement full analysis workflow:
+        1. Load all parameters
+        2. Enumerate and classify parameters
+        3. Run vulnerability scans
+        4. Extract secrets
+        5. Generate statistics
+        6. Create reports
+        """
+        print("[+] Starting automated SSM analysis...")
+        
+        # TODO: Implement complete analysis workflow
+        pass
+    
+    def enumerate_parameters(self):
+        """
+        Discover all parameters
+        
+        TODO: Load and enumerate all parameters from parameters_dir
+        """
+        # TODO: Implement enumeration
+        pass
+    
+    def classify_parameters(self, parameters):
+        """
+        Classify parameters by sensitivity
+        
+        TODO: Create classifications:
+        - critical_secrets (passwords, keys, tokens)
+        - sensitive_config (endpoints, usernames)
+        - public_config (non-sensitive settings)
+        """
+        # TODO: Implement classification
+        pass
+    
+    def scan_vulnerabilities(self, parameters):
+        """
+        Scan for security vulnerabilities
+        
+        TODO: Check for:
+        - Plaintext sensitive data
+        - Weak naming conventions
+        - Missing encryption
+        - Overly permissive patterns
+        """
+        # TODO: Implement vulnerability scanning
+        pass
+    
+    def extract_secrets(self, parameters):
+        """
+        Extract and analyze secrets
+        
+        TODO: Extract all secret values and analyze:
+        - Secret type
+        - Format validity
+        - Strength/complexity
+        - Potential exposure risk
+        """
+        # TODO: Implement secret extraction
+        pass
+    
+    def generate_statistics(self):
+        """
+        Generate analysis statistics
+        
+        TODO: Calculate:
+        - Total parameters found
+        - Parameters by type (String vs SecureString)
+        - Secrets by category
+        - Vulnerabilities by severity
+        - Risk score
+        """
+        # TODO: Implement statistics generation
+        pass
+    
+    def create_reports(self):
+        """
+        Create output reports
+        
+        TODO: Generate:
+        1. JSON report with all findings
+        2. Human-readable text report
+        3. CSV export of parameters
+        4. Executive summary
+        """
+        # TODO: Implement report generation
+        pass
+    
+    def calculate_risk_score(self):
+        """
+        Calculate overall security risk score
+        
+        TODO: Assign risk score (0-100) based on:
+        - Number of critical vulnerabilities
+        - Plaintext secrets count
+        - Weak credentials found
+        - Missing security controls
+        """
+        # TODO: Implement risk scoring
+        pass
+
+def main():
+    """
+    Main execution function
+    
+    TODO: Implement command-line interface with argparse:
+    - --parameters-dir: Input directory
+    - --output-dir: Output directory
+    - --verbose: Verbose output
+    - --format: Output format (json, text, csv)
+    """
+    # TODO: Implement CLI and main execution
+    pass
+
+if __name__ == "__main__":
+    main()
+Save as automated_analyzer.py and make executable.
+
+Step 3.2: Test the Automation Framework
+Run your completed automation tool:
+
+python3 automated_analyzer.py --parameters-dir parameters --output-dir results --verbose
+Expected output structure:
+
+results/full_analysis.json - Complete analysis data
+results/vulnerabilities.json - Security findings
+results/extracted_secrets.json - Extracted secrets
+results/report.txt - Human-readable report
+Expected Outcomes
+After completing this lab, students should have:
+
+Functional enumeration tool that discovers all SSM parameters
+Vulnerability scanner identifying security misconfigurations
+Secret extractor categorizing and analyzing extracted credentials
+Automated analyzer integrating all components
+Understanding of SSM Parameter Store security risks
+Key Findings to Identify
+Plaintext storage of sensitive data (Type: String instead of SecureString)
+Overly descriptive parameter names revealing system architecture
+Weak credentials stored in parameters
+Parameters with multiple versions (potential secret rotation issues)
+Missing encryption on sensitive configuration
+Troubleshooting Tips
+Issue: JSON parsing errors when loading parameters
+
+Solution: Validate JSON syntax using python3 -m json.tool filename.json
+Check for trailing commas or missing quotes
+Issue: Script cannot find parameters directory
+
+Solution: Verify current working directory with pwd
+Use absolute paths: os.path.abspath(parameters_dir)
+Issue: Empty results from enumeration
+
+Solution: Confirm .json files exist in parameters directory
+Check file permissions with ls -la parameters/
+Conclusion
+This lab demonstrated AWS SSM Parameter Store security analysis through:
+
+Enumeration techniques to discover stored parameters
+Vulnerability identification in parameter configurations
+Automated extraction of secrets and credentials
+Security analysis of cloud parameter storage
+Key Takeaways
+SSM Parameter Store can expose sensitive data if misconfigured
+Always use SecureString type for sensitive parameters
+Implement least-privilege IAM policies for parameter access
+Regularly audit parameter naming conventions
+Monitor parameter access patterns for anomalies
+Security Best Practices
+Use SecureString type for all sensitive data
+Implement parameter path-based access controls
+Enable CloudTrail logging for parameter access
+Rotate secrets regularly using AWS Secrets Manager
+Use KMS encryption for SecureString parameters
+Avoid descriptive names that reveal system details
+Next Steps
+Explore AWS Secrets Manager as an alternative to Parameter Store
+Implement automated secret rotation
+Integrate parameter security scanning into CI/CD pipelines
+Study IAM policies for parameter store access control
+Lab Complete: You have successfully learned to analyze and extract keys from AWS SSM Parameter Store while understanding associated security implications.
