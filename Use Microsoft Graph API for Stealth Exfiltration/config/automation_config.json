@@ -1,0 +1,19 @@
+{
+    "schedule": {
+        "enabled": true,
+        "interval_hours": 2,
+        "max_runs": 3
+    },
+    "targets": {
+        "users": true,
+        "files": true
+    },
+    "stealth": {
+        "random_delay": true,
+        "delay_range": [60, 180]
+    },
+    "output": {
+        "cleanup_old": true,
+        "retention_days": 3
+    }
+}
