@@ -1,0 +1,660 @@
+Microsoft Graph API Data Extraction Techniques
+Objectives
+By the end of this lab, students will be able to:
+
+Understand Microsoft Graph API authentication and authorization mechanisms
+Implement data extraction techniques using Python and Graph API
+Apply operational security principles during data collection activities
+Analyze detection vectors and implement basic evasion techniques
+Document data extraction activities for security assessment purposes
+Prerequisites
+Basic Python programming knowledge
+Understanding of REST APIs and HTTP protocols
+Familiarity with OAuth 2.0 authentication concepts
+Basic Linux command line skills
+Knowledge of JSON data structures
+Lab Environment
+Your pre-configured cloud machine includes:
+
+Ubuntu 20.04 LTS
+Python 3.8+ with pip
+Required Python libraries (requests, schedule)
+Text editors (nano, vim)
+Sample configuration files in /home/student/lab15
+All tools are pre-installed and ready to use. Click Start Lab to begin.
+
+Task 1: Configure Graph API Authentication Framework
+Step 1.1: Set Up Project Structure
+Create the project directory structure:
+
+cd /home/student/lab15
+mkdir -p graph-extraction/{config,scripts,data,logs}
+cd graph-extraction
+Step 1.2: Create Configuration Module
+Create the configuration file:
+
+nano config/app_config.py
+Add the following starter template:
+
+class GraphConfig:
+    """Configuration for Microsoft Graph API access"""
+    
+    # Simulated credentials (educational purposes only)
+    CLIENT_ID = "12345678-1234-1234-1234-123456789012"
+    CLIENT_SECRET = "simulated_secret_for_lab"
+    TENANT_ID = "87654321-4321-4321-4321-210987654321"
+    
+    # API endpoints
+    GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0"
+    AUTH_URL = "https://login.microsoftonline.com"
+    
+    # Required scopes
+    SCOPES = [
+        "https://graph.microsoft.com/.default"
+    ]
+    
+    # Operational parameters
+    REQUEST_DELAY = 2  # seconds
+    MAX_RETRIES = 3
+    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+Step 1.3: Create Authentication Handler
+Create the authentication module:
+
+nano scripts/auth_handler.py
+Implement the authentication handler (starter template):
+
+import logging
+import time
+from datetime import datetime, timedelta
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'config'))
+from app_config import GraphConfig
+
+class GraphAuthenticator:
+    """Handles Microsoft Graph API authentication"""
+    
+    def __init__(self):
+        self.config = GraphConfig()
+        self.access_token = None
+        self.token_expires = None
+        self.setup_logging()
+    
+    def setup_logging(self):
+        """Configure logging for authentication operations"""
+        # TODO: Set up logging to file and console
+        # TODO: Configure log format with timestamp
+        pass
+    
+    def simulate_token_acquisition(self):
+        """
+        Simulate OAuth token acquisition for educational purposes.
+        In production, this would make actual API calls.
+        
+        Returns:
+            bool: True if authentication successful
+        """
+        # TODO: Log authentication attempt
+        # TODO: Simulate network delay
+        # TODO: Generate simulated token
+        # TODO: Set token expiration time
+        # TODO: Return success status
+        pass
+    
+    def get_headers(self):
+        """
+        Get authentication headers for API requests.
+        
+        Returns:
+            dict: Headers including authorization token
+        """
+        # TODO: Check if token is valid
+        # TODO: Refresh token if needed
+        # TODO: Return headers dictionary with Authorization, Content-Type, User-Agent
+        pass
+    
+    def is_token_valid(self):
+        """
+        Check if current token is still valid.
+        
+        Returns:
+            bool: True if token is valid and not expired
+        """
+        # TODO: Verify token exists
+        # TODO: Check expiration time
+        pass
+
+if __name__ == "__main__":
+    # Test the authenticator
+    auth = GraphAuthenticator()
+    # TODO: Test token acquisition
+    # TODO: Print sample headers
+Step 1.4: Test Authentication Module
+Run the authentication test:
+
+cd scripts
+python3 auth_handler.py
+Expected Output: Authentication success message and sample headers displayed.
+
+Task 2: Implement Data Extraction Engine
+Step 2.1: Create Core Extraction Module
+Create the main extraction script:
+
+nano scripts/graph_extractor.py
+Implement the extraction engine (starter template):
+
+import json
+import time
+import random
+from datetime import datetime
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'config'))
+from app_config import GraphConfig
+from auth_handler import GraphAuthenticator
+
+class DataExtractor:
+    """Handles data extraction from Microsoft Graph API"""
+    
+    def __init__(self):
+        self.config = GraphConfig()
+        self.auth = GraphAuthenticator()
+        self.extracted_data = []
+    
+    def stealth_delay(self):
+        """
+        Implement randomized delays to avoid detection patterns.
+        """
+        # TODO: Calculate delay with jitter
+        # TODO: Apply sleep with randomization
+        pass
+    
+    def simulate_api_request(self, endpoint, method="GET"):
+        """
+        Simulate Graph API requests for educational purposes.
+        
+        Args:
+            endpoint: API endpoint URL
+            method: HTTP method (GET, POST, etc.)
+        
+        Returns:
+            dict: Simulated API response data
+        """
+        # TODO: Log the simulated request
+        # TODO: Determine response type based on endpoint
+        # TODO: Return appropriate simulated data
+        pass
+    
+    def simulate_user_data(self):
+        """Generate simulated user directory data"""
+        return {
+            "value": [
+                {
+                    "id": "user1@company.com",
+                    "displayName": "John Doe",
+                    "jobTitle": "Engineer",
+                    "department": "IT"
+                }
+            ]
+        }
+    
+    def simulate_file_data(self):
+        """Generate simulated file metadata"""
+        return {
+            "value": [
+                {
+                    "name": "document.xlsx",
+                    "size": 2048576,
+                    "lastModifiedDateTime": "2024-01-15T10:30:00Z"
+                }
+            ]
+        }
+    
+    def extract_user_directory(self):
+        """
+        Extract user directory information.
+        
+        Returns:
+            bool: True if extraction successful
+        """
+        # TODO: Authenticate
+        # TODO: Apply stealth delay
+        # TODO: Make API request to /users endpoint
+        # TODO: Process and store results
+        # TODO: Log extraction statistics
+        pass
+    
+    def extract_file_metadata(self):
+        """
+        Extract file and document metadata.
+        
+        Returns:
+            bool: True if extraction successful
+        """
+        # TODO: Apply stealth delay
+        # TODO: Request drive/file data
+        # TODO: Process multiple locations
+        # TODO: Store extracted metadata
+        pass
+    
+    def save_extracted_data(self):
+        """
+        Save extracted data to JSON files.
+        
+        Returns:
+            str: Path to summary file
+        """
+        # TODO: Generate timestamp
+        # TODO: Create raw data file
+        # TODO: Create summary with statistics
+        # TODO: Write files to data directory
+        # TODO: Return summary file path
+        pass
+    
+    def run_extraction(self):
+        """
+        Execute complete extraction process.
+        
+        Returns:
+            str: Path to extraction summary file
+        """
+        # TODO: Execute user extraction
+        # TODO: Execute file extraction
+        # TODO: Save all results
+        # TODO: Print summary statistics
+        pass
+
+if __name__ == "__main__":
+    extractor = DataExtractor()
+    # TODO: Run extraction and display results
+Step 2.2: Execute Data Extraction
+Run the extraction script:
+
+python3 graph_extractor.py
+Verify the extracted data:
+
+ls -la ../data/
+cat ../data/extraction_summary_*.json | head -30
+Step 2.3: Analyze Extraction Results
+Create an analysis script:
+
+nano scripts/analyze_data.py
+Implement data analysis (starter template):
+
+import json
+import glob
+import os
+from datetime import datetime
+
+class ExtractionAnalyzer:
+    """Analyze extracted data and generate reports"""
+    
+    def __init__(self, data_dir="../data"):
+        self.data_dir = data_dir
+    
+    def load_extraction_files(self):
+        """
+        Load all extraction summary files.
+        
+        Returns:
+            list: List of extraction data dictionaries
+        """
+        # TODO: Find all summary files
+        # TODO: Load and parse JSON
+        # TODO: Return list of extractions
+        pass
+    
+    def calculate_statistics(self, extractions):
+        """
+        Calculate statistics across all extractions.
+        
+        Args:
+            extractions: List of extraction data
+        
+        Returns:
+            dict: Statistics summary
+        """
+        # TODO: Count total records
+        # TODO: Aggregate by record type
+        # TODO: Calculate time ranges
+        # TODO: Return statistics dictionary
+        pass
+    
+    def generate_report(self):
+        """Generate and display analysis report"""
+        # TODO: Load extraction files
+        # TODO: Calculate statistics
+        # TODO: Format and print report
+        pass
+
+if __name__ == "__main__":
+    analyzer = ExtractionAnalyzer()
+    # TODO: Generate and display report
+Task 3: Implement Automated Extraction
+Step 3.1: Create Automation Framework
+Create the automation script:
+
+nano scripts/automated_extractor.py
+Implement automation (starter template):
+
+import schedule
+import time
+import json
+import argparse
+import logging
+from datetime import datetime
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'config'))
+from graph_extractor import DataExtractor
+
+class AutomatedExtractor:
+    """Automates scheduled data extraction"""
+    
+    def __init__(self, config_file=None):
+        self.extractor = DataExtractor()
+        self.setup_logging()
+        self.load_config(config_file)
+    
+    def setup_logging(self):
+        """Configure logging for automation"""
+        # TODO: Set up log file with date
+        # TODO: Configure log format
+        # TODO: Add file and console handlers
+        pass
+    
+    def load_config(self, config_file):
+        """
+        Load automation configuration.
+        
+        Args:
+            config_file: Path to JSON config file
+        """
+        # TODO: Define default configuration
+        # TODO: Load custom config if provided
+        # TODO: Merge configurations
+        pass
+    
+    def execute_scheduled_extraction(self):
+        """Execute a scheduled extraction run"""
+        # TODO: Log extraction start
+        # TODO: Apply configured delays
+        # TODO: Run extraction
+        # TODO: Post-process results
+        # TODO: Handle errors
+        pass
+    
+    def cleanup_old_files(self, retention_days=7):
+        """
+        Remove old extraction files.
+        
+        Args:
+            retention_days: Number of days to retain files
+        """
+        # TODO: Calculate cutoff date
+        # TODO: Scan data directory
+        # TODO: Remove old files
+        # TODO: Log cleanup actions
+        pass
+    
+    def start_automation(self, interval_hours=6, max_runs=5):
+        """
+        Start automated extraction process.
+        
+        Args:
+            interval_hours: Hours between extractions
+            max_runs: Maximum number of runs
+        """
+        # TODO: Schedule extraction job
+        # TODO: Execute initial run
+        # TODO: Run scheduled jobs
+        # TODO: Track run count
+        pass
+    
+    def run_single_extraction(self):
+        """Run a single extraction (non-scheduled)"""
+        # TODO: Execute one extraction
+        # TODO: Log results
+        pass
+
+def main():
+    parser = argparse.ArgumentParser(description='Automated Graph API Extractor')
+    parser.add_argument('--mode', choices=['single', 'scheduled'], 
+                       default='single', help='Execution mode')
+    parser.add_argument('--config', help='Config file path')
+    
+    args = parser.parse_args()
+    
+    # TODO: Create automator instance
+    # TODO: Run based on mode
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 3.2: Create Automation Configuration
+Create configuration file:
+
+nano config/automation_config.json
+Add configuration:
+
+{
+    "schedule": {
+        "enabled": true,
+        "interval_hours": 2,
+        "max_runs": 3
+    },
+    "targets": {
+        "users": true,
+        "files": true
+    },
+    "stealth": {
+        "random_delay": true,
+        "delay_range": [60, 180]
+    },
+    "output": {
+        "cleanup_old": true,
+        "retention_days": 3
+    }
+}
+Step 3.3: Test Automation
+Run single extraction:
+
+python3 automated_extractor.py --mode single --config ../config/automation_config.json
+Monitor the logs:
+
+tail -f ../logs/automation_*.log
+Task 4: Implement Stealth Techniques
+Step 4.1: Create Stealth Module
+Create advanced stealth techniques:
+
+nano scripts/stealth_techniques.py
+Implement stealth features (starter template):
+
+import random
+import time
+from datetime import datetime
+
+class StealthOperations:
+    """Advanced stealth and evasion techniques"""
+    
+    def __init__(self):
+        self.user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15"
+        ]
+        self.request_history = []
+    
+    def get_random_user_agent(self):
+        """
+        Select random user agent for requests.
+        
+        Returns:
+            str: Random user agent string
+        """
+        # TODO: Return random user agent from list
+        pass
+    
+    def calculate_intelligent_delay(self, base_delay=2):
+        """
+        Calculate delay based on request patterns.
+        
+        Args:
+            base_delay: Base delay in seconds
+        
+        Returns:
+            float: Calculated delay with jitter
+        """
+        # TODO: Analyze recent request patterns
+        # TODO: Calculate average interval
+        # TODO: Add randomization
+        # TODO: Ensure minimum delay
+        pass
+    
+    def record_request(self, endpoint, timestamp=None):
+        """
+        Record request for pattern analysis.
+        
+        Args:
+            endpoint: API endpoint accessed
+            timestamp: Request timestamp
+        """
+        # TODO: Store request details
+        # TODO: Maintain history limit
+        pass
+    
+    def should_throttle(self, max_per_hour=100):
+        """
+        Determine if requests should be throttled.
+        
+        Args:
+            max_per_hour: Maximum requests per hour
+        
+        Returns:
+            bool: True if throttling needed
+        """
+        # TODO: Count recent requests
+        # TODO: Compare to threshold
+        # TODO: Return throttle decision
+        pass
+    
+    def obfuscate_data(self, data):
+        """
+        Apply basic obfuscation to extracted data.
+        
+        Args:
+            data: Data to obfuscate
+        
+        Returns:
+            str: Obfuscated data
+        """
+        # TODO: Implement encoding/obfuscation
+        # TODO: Return obfuscated result
+        pass
+
+if __name__ == "__main__":
+    stealth = StealthOperations()
+    # TODO: Test stealth functions
+Step 4.2: Integrate Stealth Techniques
+Update the extractor to use stealth techniques:
+
+nano scripts/enhanced_extractor.py
+Create enhanced version (starter template):
+
+from graph_extractor import DataExtractor
+from stealth_techniques import StealthOperations
+
+class EnhancedExtractor(DataExtractor):
+    """Data extractor with advanced stealth capabilities"""
+    
+    def __init__(self):
+        super().__init__()
+        self.stealth = StealthOperations()
+    
+    def extract_with_stealth(self, extraction_func):
+        """
+        Execute extraction with stealth techniques.
+        
+        Args:
+            extraction_func: Function to execute
+        
+        Returns:
+            Result of extraction function
+        """
+        # TODO: Check throttling
+        # TODO: Apply intelligent delay
+        # TODO: Rotate user agent
+        # TODO: Execute extraction
+        # TODO: Record request
+        pass
+    
+    def run_stealth_extraction(self):
+        """Execute extraction with full stealth measures"""
+        # TODO: Apply stealth to each extraction task
+        # TODO: Monitor request patterns
+        # TODO: Adjust timing dynamically
+        pass
+
+if __name__ == "__main__":
+    extractor = EnhancedExtractor()
+    # TODO: Run stealth extraction
+Step 4.3: Test Stealth Features
+Run the enhanced extractor:
+
+python3 enhanced_extractor.py
+Monitor request patterns:
+
+grep "request" ../logs/*.log | tail -20
+Expected Outcomes
+After completing this lab, you should have:
+
+Functional Graph API authentication framework
+Working data extraction scripts with simulated API calls
+Automated extraction system with scheduling
+Implementation of basic stealth techniques
+Multiple JSON files with extracted data in /data directory
+Log files documenting all operations in /logs directory
+Key Files Created:
+
+config/app_config.py - Configuration settings
+scripts/auth_handler.py - Authentication module
+scripts/graph_extractor.py - Core extraction engine
+scripts/automated_extractor.py - Automation framework
+scripts/stealth_techniques.py - Stealth operations
+data/extraction_summary_*.json - Extraction results
+Troubleshooting Tips
+Issue: Import errors when running scripts
+
+Solution: Ensure you're in the scripts directory when running Python files
+Verify sys.path.append() statements are correct
+Issue: No data files created
+
+Solution: Check that data and logs directories exist
+Verify write permissions: ls -la ../data
+Issue: Authentication simulation fails
+
+Solution: Review auth_handler.py implementation
+Check that all required methods are implemented
+Conclusion
+This lab demonstrated Microsoft Graph API data extraction techniques in a simulated environment. You learned to:
+
+Implement OAuth-style authentication frameworks
+Create modular data extraction systems
+Apply operational security principles
+Automate extraction processes
+Implement basic stealth and evasion techniques
+Important Notes:
+
+This lab uses simulated API calls for educational purposes
+Real-world implementations require proper authorization
+Always obtain explicit permission before accessing organizational data
+Understanding these techniques helps in both offensive security assessments and defensive monitoring
+Next Steps:
+
+Enhance error handling in extraction scripts
+Implement data encryption for stored results
+Add more sophisticated evasion techniques
+Create detection signatures for defensive purposes
+Remember: These skills are for authorized security assessments only. Unauthorized access to systems or data is illegal and unethical.
