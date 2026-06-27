@@ -1,0 +1,8 @@
+{
+    "Name": "/myapp/config/admin-password",
+    "Type": "String",
+    "Value": "admin123",
+    "Version": 1,
+    "LastModifiedDate": "2024-01-05T09:15:00.000Z",
+    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/myapp/config/admin-password"
+}
