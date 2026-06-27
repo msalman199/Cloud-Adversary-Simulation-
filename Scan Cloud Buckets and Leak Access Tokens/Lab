@@ -1,0 +1,481 @@
+Scan Cloud Buckets and Leak Access Tokens
+Objectives
+By the end of this lab, students will be able to:
+
+Identify misconfigured public cloud storage buckets across AWS, Azure, and GCP
+Discover leaked access tokens in various sources
+Understand common cloud security misconfigurations and their impact
+Implement automated scanning tools using Python
+Apply defensive measures to prevent cloud storage exposure
+Prerequisites
+Before starting this lab, students should have:
+
+Basic understanding of cloud computing concepts (AWS S3, Azure Blob, GCP Storage)
+Fundamental Python programming skills
+Knowledge of HTTP requests and REST APIs
+Familiarity with command-line operations in Linux
+Lab Environment
+Al Nafi provides ready-to-use Linux-based cloud machines for this lab. Click Start Lab to access your pre-configured environment.
+
+Your lab machine includes:
+
+Ubuntu 20.04 LTS
+Python 3.8+ with pip
+Pre-installed development tools
+Internet connectivity for cloud scanning
+Task 1: Set Up Cloud Scanning Environment
+Step 1: Install Required Dependencies
+# Update package manager
+sudo apt update
+
+# Install Python packages
+pip3 install requests colorama boto3
+
+# Create project directory
+mkdir ~/cloud-scanner
+cd ~/cloud-scanner
+Step 2: Verify Installation
+# Test Python imports
+python3 -c "import requests, colorama, boto3; print('All packages installed successfully')"
+Task 2: Build Cloud Bucket Scanner
+Step 1: Create Bucket Scanner Template
+Create bucket_scanner.py:
+
+#!/usr/bin/env python3
+
+import requests
+import json
+import sys
+import time
+from colorama import Fore, init
+
+init(autoreset=True)
+
+class CloudBucketScanner:
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+        })
+        self.found_buckets = []
+    
+    def generate_bucket_names(self, base_name):
+        """
+        Generate potential bucket names based on common patterns.
+        
+        Args:
+            base_name: Base company or project name
+        
+        Returns:
+            List of potential bucket names
+        """
+        # TODO: Create list of common patterns (backup, dev, test, prod, staging, logs)
+        # TODO: Combine base_name with patterns
+        # TODO: Return list of generated names
+        pass
+    
+    def check_aws_bucket(self, bucket_name):
+        """
+        Check if AWS S3 bucket exists and is publicly accessible.
+        
+        Args:
+            bucket_name: Name of the bucket to check
+        
+        Returns:
+            Dictionary with bucket status and details
+        """
+        # TODO: Construct S3 URL (https://{bucket_name}.s3.amazonaws.com)
+        # TODO: Send GET request with timeout
+        # TODO: Check status code (200=accessible, 403=private, 404=not found)
+        # TODO: Return result dictionary with status, url, and content info
+        pass
+    
+    def check_azure_blob(self, container_name):
+        """
+        Check if Azure Blob Storage container is accessible.
+        
+        Args:
+            container_name: Name of the container to check
+        
+        Returns:
+            Dictionary with container status and details
+        """
+        # TODO: Try common Azure storage account patterns
+        # TODO: Construct URL (https://{account}.blob.core.windows.net/{container})
+        # TODO: Check accessibility
+        # TODO: Return result dictionary
+        pass
+    
+    def check_gcp_bucket(self, bucket_name):
+        """
+        Check if Google Cloud Storage bucket is accessible.
+        
+        Args:
+            bucket_name: Name of the bucket to check
+        
+        Returns:
+            Dictionary with bucket status and details
+        """
+        # TODO: Construct GCP URL (https://storage.googleapis.com/{bucket_name})
+        # TODO: Send GET request
+        # TODO: Check response status
+        # TODO: Return result dictionary
+        pass
+    
+    def scan_buckets(self, target_names):
+        """
+        Main scanning function to check multiple cloud providers.
+        
+        Args:
+            target_names: List of base names to scan
+        """
+        # TODO: Loop through target names
+        # TODO: Generate bucket variations for each name
+        # TODO: Check AWS, Azure, and GCP for each variation
+        # TODO: Store found buckets in self.found_buckets
+        # TODO: Add delay between requests to avoid rate limiting
+        pass
+    
+    def save_results(self, filename='bucket_scan_results.json'):
+        """
+        Save scan results to JSON file.
+        
+        Args:
+            filename: Output filename
+        """
+        # TODO: Write self.found_buckets to JSON file
+        # TODO: Print confirmation message
+        pass
+
+def main():
+    if len(sys.argv) < 2:
+        print(f"{Fore.RED}Usage: python3 bucket_scanner.py <target_name1> [target_name2] ...")
+        sys.exit(1)
+    
+    scanner = CloudBucketScanner()
+    target_names = sys.argv[1:]
+    
+    # TODO: Call scanner.scan_buckets() with target_names
+    # TODO: Call scanner.save_results()
+    # TODO: Print summary of findings
+
+if __name__ == "__main__":
+    main()
+Step 2: Implement Scanner Functions
+Complete the TODO sections in the scanner:
+
+Implement generate_bucket_names() with at least 10 common patterns
+Implement check_aws_bucket() to test S3 accessibility
+Implement check_azure_blob() for Azure storage
+Implement check_gcp_bucket() for Google Cloud Storage
+Implement scan_buckets() to orchestrate the scanning process
+Implement save_results() to export findings
+Step 3: Test the Scanner
+# Make script executable
+chmod +x bucket_scanner.py
+
+# Test with sample names (use only for educational purposes)
+python3 bucket_scanner.py testcompany demo
+Task 3: Create Token Discovery Tool
+Step 1: Create Token Hunter Template
+Create token_hunter.py:
+
+#!/usr/bin/env python3
+
+import re
+import json
+import sys
+from colorama import Fore, init
+
+init(autoreset=True)
+
+class TokenHunter:
+    def __init__(self):
+        self.found_tokens = []
+        
+        # Define regex patterns for different token types
+        self.token_patterns = {
+            'aws_access_key': r'AKIA[0-9A-Z]{16}',
+            'aws_secret_key': r'[A-Za-z0-9/+=]{40}',
+            'github_token': r'ghp_[A-Za-z0-9]{36}',
+            'slack_token': r'xox[baprs]-[A-Za-z0-9-]+',
+            'jwt_token': r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*',
+            'api_key_generic': r'[Aa]pi[_-]?[Kk]ey["\s]*[:=]["\s]*[A-Za-z0-9_-]{20,}',
+        }
+    
+    def scan_content_for_tokens(self, content, source_path=""):
+        """
+        Scan text content for various token patterns.
+        
+        Args:
+            content: Text content to scan
+            source_path: Path or URL of the content source
+        
+        Returns:
+            List of found tokens with metadata
+        """
+        # TODO: Loop through self.token_patterns
+        # TODO: Use re.findall() to find matches for each pattern
+        # TODO: For each match, create token_info dictionary with type, token, source
+        # TODO: Append to self.found_tokens
+        # TODO: Return list of found tokens
+        pass
+    
+    def scan_local_file(self, file_path):
+        """
+        Scan a local file for leaked tokens.
+        
+        Args:
+            file_path: Path to file to scan
+        """
+        # TODO: Open and read file content
+        # TODO: Call scan_content_for_tokens() with content
+        # TODO: Handle file reading errors
+        pass
+    
+    def scan_directory(self, directory_path):
+        """
+        Recursively scan directory for tokens in text files.
+        
+        Args:
+            directory_path: Path to directory to scan
+        """
+        # TODO: Use os.walk() to traverse directory
+        # TODO: Filter for relevant file extensions (.txt, .json, .env, .py, .js, .yml)
+        # TODO: Call scan_local_file() for each file
+        # TODO: Print progress information
+        pass
+    
+    def analyze_token(self, token, token_type):
+        """
+        Analyze token structure and extract metadata.
+        
+        Args:
+            token: Token string to analyze
+            token_type: Type of token
+        
+        Returns:
+            Dictionary with token analysis results
+        """
+        # TODO: Implement token-specific analysis
+        # TODO: For JWT tokens, decode header and payload
+        # TODO: For AWS keys, check format validity
+        # TODO: Return analysis results dictionary
+        pass
+    
+    def save_results(self, filename='found_tokens.json'):
+        """
+        Save found tokens to JSON file.
+        
+        Args:
+            filename: Output filename
+        """
+        # TODO: Write self.found_tokens to JSON file
+        # TODO: Mask sensitive parts of tokens in output
+        # TODO: Print confirmation message
+        pass
+
+def main():
+    if len(sys.argv) < 3:
+        print(f"{Fore.RED}Usage: python3 token_hunter.py <mode> <path>")
+        print(f"{Fore.YELLOW}Modes:")
+        print(f"  file <filepath>      - Scan single file")
+        print(f"  directory <dirpath>  - Scan directory recursively")
+        sys.exit(1)
+    
+    hunter = TokenHunter()
+    mode = sys.argv[1]
+    path = sys.argv[2]
+    
+    # TODO: Implement mode handling (file or directory)
+    # TODO: Call appropriate scanning method
+    # TODO: Call save_results()
+    # TODO: Print summary of findings
+
+if __name__ == "__main__":
+    main()
+Step 2: Create Test Files
+Create sample files with mock tokens for testing:
+
+# Create test directory
+mkdir ~/test-tokens
+cd ~/test-tokens
+
+# Create sample configuration file
+cat > sample_config.env << 'EOF'
+# Sample configuration with mock tokens (for testing only)
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+GITHUB_TOKEN=ghp_1234567890abcdef1234567890abcdef12345678
+API_KEY=sk_test_4eC39HqLyjWDarjtT1zdp7dc
+EOF
+
+# Create sample Python script
+cat > sample_app.py << 'EOF'
+# Bad practice example - hardcoded credentials
+AWS_KEY = "AKIAIOSFODNN7EXAMPLE"
+SECRET = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+def connect():
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+    return token
+EOF
+Step 3: Test Token Hunter
+# Make script executable
+chmod +x ~/cloud-scanner/token_hunter.py
+
+# Test on single file
+python3 ~/cloud-scanner/token_hunter.py file ~/test-tokens/sample_config.env
+
+# Test on directory
+python3 ~/cloud-scanner/token_hunter.py directory ~/test-tokens
+Task 4: Implement Security Best Practices
+Step 1: Create Bucket Security Checker
+Create security_checker.py:
+
+#!/usr/bin/env python3
+
+import boto3
+from botocore.exceptions import ClientError
+from colorama import Fore, init
+
+init(autoreset=True)
+
+class BucketSecurityChecker:
+    def __init__(self):
+        # TODO: Initialize boto3 client (requires AWS credentials)
+        pass
+    
+    def check_bucket_policy(self, bucket_name):
+        """
+        Check S3 bucket policy for public access.
+        
+        Args:
+            bucket_name: Name of bucket to check
+        
+        Returns:
+            Dictionary with policy analysis
+        """
+        # TODO: Get bucket policy using boto3
+        # TODO: Parse policy JSON
+        # TODO: Check for public access statements
+        # TODO: Return analysis results
+        pass
+    
+    def check_bucket_acl(self, bucket_name):
+        """
+        Check S3 bucket ACL for public permissions.
+        
+        Args:
+            bucket_name: Name of bucket to check
+        
+        Returns:
+            Dictionary with ACL analysis
+        """
+        # TODO: Get bucket ACL using boto3
+        # TODO: Check for AllUsers or AuthenticatedUsers grants
+        # TODO: Return analysis results
+        pass
+    
+    def recommend_fixes(self, bucket_name):
+        """
+        Provide security recommendations for bucket.
+        
+        Args:
+            bucket_name: Name of bucket to analyze
+        
+        Returns:
+            List of recommended security fixes
+        """
+        # TODO: Run check_bucket_policy() and check_bucket_acl()
+        # TODO: Generate list of recommendations based on findings
+        # TODO: Include specific AWS CLI commands to fix issues
+        # TODO: Return recommendations list
+        pass
+
+def main():
+    # TODO: Implement main function to check bucket security
+    # TODO: Accept bucket name as command-line argument
+    # TODO: Display security findings and recommendations
+    pass
+
+if __name__ == "__main__":
+    main()
+Step 2: Document Defensive Measures
+Create SECURITY_BEST_PRACTICES.md:
+
+# Cloud Storage Security Best Practices
+
+## AWS S3 Security
+
+### Block Public Access
+- Enable "Block all public access" at account level
+- Use bucket policies to restrict access
+- Implement least privilege IAM policies
+
+### Encryption
+- Enable default encryption (AES-256 or KMS)
+- Use SSL/TLS for data in transit
+- Rotate encryption keys regularly
+
+### Monitoring
+- Enable CloudTrail logging
+- Set up S3 access logging
+- Configure CloudWatch alarms for unusual access
+
+## Token Management
+
+### Prevention
+- Never commit credentials to version control
+- Use environment variables or secret managers
+- Implement pre-commit hooks to scan for secrets
+
+### Detection
+- Regularly scan repositories for leaked tokens
+- Use automated secret scanning tools
+- Monitor for unauthorized API usage
+
+### Response
+- Immediately revoke compromised tokens
+- Rotate all related credentials
+- Audit access logs for unauthorized activity
+Expected Outcomes
+After completing this lab, students should have:
+
+Working cloud bucket scanner that checks AWS, Azure, and GCP
+Token discovery tool that identifies leaked credentials
+Understanding of common cloud misconfigurations
+Knowledge of defensive security measures
+Practical experience with Python security tools
+Troubleshooting Tips
+Issue: Rate limiting errors
+
+Add delays between requests (time.sleep())
+Implement exponential backoff
+Use multiple API keys if available
+Issue: Connection timeouts
+
+Increase timeout values in requests
+Check network connectivity
+Verify target URLs are correct
+Issue: No tokens found in test files
+
+Verify regex patterns are correct
+Check file encoding (use UTF-8)
+Ensure file paths are accessible
+Conclusion
+This lab demonstrated critical cloud security concepts including bucket enumeration, token discovery, and security best practices. Students learned to identify common misconfigurations that lead to data breaches and implemented automated tools for security scanning. These skills are essential for both offensive security testing and defensive security operations.
+
+Key Takeaways:
+
+Cloud misconfigurations are common and exploitable
+Automated scanning tools improve security assessment efficiency
+Leaked tokens pose significant security risks
+Defensive measures must be implemented proactively
+Regular security audits are essential for cloud environments
+Next Steps:
+
+Explore advanced cloud security tools (ScoutSuite, Prowler)
+Study cloud-specific attack techniques
+Learn about cloud security compliance frameworks
+Practice incident response for cloud breaches
